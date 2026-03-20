@@ -1,31 +1,30 @@
 <%= turbo_frame_tag dom_id(draft) do %>
-  <div class="mb-4 rounded-lg border border-dashed p-4 <%= draft.sent? ? 'bg-blue-50 border-blue-200' : 'bg-amber-50 border-amber-300' %>">
+  <div class="rounded-xl border p-4 transition-all duration-200 <%= draft.sent? ? 'bg-slate-50 border-slate-200' : 'bg-amber-50/50 border-amber-200 border-dashed' %>">
     <div class="flex items-start justify-between mb-2">
       <% if draft.sent? %>
-        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">Sent</span>
+        <span class="badge badge-success">Sent</span>
       <% elsif draft.approved? %>
-        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Approved — ready to send</span>
+        <span class="badge badge-info">Approved — ready to send</span>
       <% else %>
-        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">Draft — not sent</span>
+        <span class="badge badge-warning">Draft — pending review</span>
       <% end %>
-      <span class="text-xs text-gray-400"><%= draft.created_at.strftime("%b %-d") %></span>
+      <span class="text-xs text-slate-400"><%= draft.created_at.strftime("%b %-d") %></span>
     </div>
 
     <% if draft.subject.present? %>
-      <p class="text-sm font-medium text-gray-800 mb-1"><%= draft.subject %></p>
+      <p class="text-sm font-medium text-slate-800 mb-1"><%= draft.subject %></p>
     <% end %>
-    <p class="text-sm text-gray-600 whitespace-pre-wrap line-clamp-6"><%= draft.body %></p>
+    <p class="text-sm text-slate-600 whitespace-pre-wrap line-clamp-6"><%= draft.body %></p>
 
     <% unless draft.sent? %>
-      <div class="flex items-center gap-3 mt-3">
-        <%= link_to "Edit", edit_draft_path(draft), class: "text-xs text-gray-500 hover:text-gray-700 border border-gray-200 rounded px-2 py-1" %>
+      <div class="flex items-center gap-2 mt-3">
+        <%= link_to "Edit", edit_draft_path(draft), class: "btn-ghost btn-sm text-xs" %>
         <% if draft.draft? %>
-          <%= button_to "Approve", approve_draft_path(draft), method: :post,
-            class: "text-xs bg-amber-500 hover:bg-amber-600 text-white rounded px-3 py-1" %>
+          <%= button_to "Approve", approve_draft_path(draft), method: :post, class: "btn-primary btn-sm text-xs" %>
         <% end %>
         <% if draft.approved? %>
           <%= button_to "Send Email", send_email_draft_path(draft), method: :post,
-            class: "text-xs bg-blue-600 hover:bg-blue-700 text-white rounded px-3 py-1",
+            class: "btn-primary btn-sm text-xs",
             data: { turbo_confirm: "Send this email?" } %>
         <% end %>
       </div>

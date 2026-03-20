@@ -1,37 +1,47 @@
-<div class="max-w-3xl">
-  <div class="mb-4">
-    <%= link_to "← #{@draft.contact.name || @draft.contact.email}", @draft.contact, class: "text-sm text-blue-600 hover:text-blue-800" %>
-  </div>
-  <div class="flex items-center justify-between mb-6">
-    <div>
-      <h1 class="text-xl font-semibold text-gray-900">Draft</h1>
-      <p class="text-sm text-gray-500 mt-1">
-        To: <%= @draft.contact.name || "" %> &lt;<%= @draft.contact.email %>&gt;
-        &middot; <%= link_to @draft.contact.company.name, @draft.contact.company, class: "text-blue-600" %>
-        &middot; <%= render "shared/status_badge", status: @draft.status %>
-      </p>
-    </div>
-    <div class="flex gap-2">
-      <% unless @draft.sent? %>
-        <%= link_to "Edit", edit_draft_path(@draft), class: "px-3 py-2 text-sm border border-gray-300 rounded-md text-gray-600 hover:text-gray-900" %>
-        <% if @draft.draft? %>
-          <%= button_to "Approve", approve_draft_path(@draft), method: :post, class: "bg-yellow-500 text-white px-4 py-2 rounded-md text-sm hover:bg-yellow-600" %>
-        <% end %>
-        <% if @draft.approved? %>
-          <%= button_to "Send Email", send_email_draft_path(@draft), method: :post, class: "bg-green-600 text-white px-4 py-2 rounded-md text-sm hover:bg-green-700", data: { turbo_confirm: "Send this email to #{@draft.contact.email}?" } %>
-        <% end %>
-      <% end %>
-    </div>
-  </div>
+<%= render "shared/page_header",
+  breadcrumbs: [["Drafts", drafts_path], [@draft.contact.name || @draft.contact.email, contact_path(@draft.contact)], ["Draft", nil]],
+  title: "Draft" %>
 
-  <div class="bg-white rounded-lg border border-gray-200 p-6">
-    <div class="mb-4">
-      <label class="text-xs font-medium text-gray-500 uppercase">Subject</label>
-      <p class="text-gray-900 font-medium"><%= @draft.subject %></p>
+<div class="max-w-3xl">
+  <div class="card">
+    <%# Header %>
+    <div class="card-header flex items-center justify-between">
+      <div>
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
+            <span class="text-xs font-bold text-slate-600"><%= initials_for(@draft.contact.name) %></span>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-slate-900">
+              To: <%= @draft.contact.name || "" %> &lt;<%= @draft.contact.email %>&gt;
+            </p>
+            <p class="text-xs text-slate-500">
+              <%= link_to @draft.contact.company.name, @draft.contact.company, class: "text-indigo-600 hover:text-indigo-700 transition-colors" %>
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <%= render "shared/status_badge", status: @draft.status %>
+        <% unless @draft.sent? %>
+          <%= link_to "Edit", edit_draft_path(@draft), class: "btn-secondary btn-sm" %>
+          <% if @draft.draft? %>
+            <%= button_to "Approve", approve_draft_path(@draft), method: :post, class: "btn-primary btn-sm" %>
+          <% end %>
+          <% if @draft.approved? %>
+            <%= button_to "Send Email", send_email_draft_path(@draft), method: :post, class: "btn-primary btn-sm", data: { turbo_confirm: "Send this email to #{@draft.contact.email}?" } %>
+          <% end %>
+        <% end %>
+      </div>
     </div>
-    <div>
-      <label class="text-xs font-medium text-gray-500 uppercase">Body</label>
-      <div class="mt-1 text-gray-700 whitespace-pre-wrap"><%= @draft.body %></div>
+
+    <%# Email preview %>
+    <div class="card-body">
+      <div class="mb-4 pb-4 border-b border-slate-100">
+        <p class="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1">Subject</p>
+        <p class="text-slate-900 font-medium"><%= @draft.subject %></p>
+      </div>
+      <div class="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed"><%= @draft.body %></div>
     </div>
   </div>
 </div>

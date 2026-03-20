@@ -1,6 +1,6 @@
 <%= form_with(model: company, class: "space-y-4") do |f| %>
   <% if company.errors.any? %>
-    <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded text-sm">
+    <div class="bg-rose-50 border border-rose-200 text-rose-800 px-4 py-3 rounded-lg text-sm">
       <ul class="list-disc list-inside">
         <% company.errors.full_messages.each do |msg| %>
           <li><%= msg %></li>
@@ -10,22 +10,29 @@
   <% end %>
 
   <div>
-    <%= f.label :name, class: "block text-sm font-medium text-gray-700" %>
-    <%= f.text_field :name, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2 border", required: true %>
+    <label class="form-label">Name</label>
+    <%= f.text_field :name, class: "form-input", required: true %>
   </div>
 
   <div>
-    <%= f.label :domain, class: "block text-sm font-medium text-gray-700" %>
-    <%= f.text_field :domain, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2 border", placeholder: "example.com", required: true %>
+    <label class="form-label">Domain</label>
+    <div class="relative">
+      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+      </div>
+      <%= f.text_field :domain, class: "form-input pl-9", placeholder: "example.com", required: true %>
+    </div>
+    <p class="text-xs text-slate-400 mt-1">The company's website domain, without https://</p>
   </div>
 
   <div>
-    <%= f.label :notes, class: "block text-sm font-medium text-gray-700" %>
-    <%= f.text_area :notes, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2 border", rows: 3 %>
+    <label class="form-label">Notes</label>
+    <%= f.text_area :notes, class: "form-input", rows: 3 %>
+    <p class="text-xs text-slate-400 mt-1">Optional notes about this company or your outreach strategy.</p>
   </div>
 
-  <div class="flex gap-3">
-    <%= f.submit class: "bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 cursor-pointer" %>
-    <%= link_to "Cancel", companies_path, class: "px-4 py-2 rounded-md text-sm text-gray-600 hover:text-gray-900 border border-gray-300" %>
+  <div class="flex gap-3 pt-2 border-t border-slate-100">
+    <%= f.submit class: "btn-primary cursor-pointer" %>
+    <%= link_to "Cancel", companies_path, class: "btn-secondary" %>
   </div>
 <% end %>

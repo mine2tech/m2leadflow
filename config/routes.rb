@@ -1,7 +1,7 @@
 Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
 
-  root "companies#index"
+  root "dashboard#index"
 
   resources :companies do
     resources :contacts, only: [:new, :create]

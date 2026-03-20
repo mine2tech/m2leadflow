@@ -1,5 +1,13 @@
-<h1 class="text-2xl font-bold text-gray-900 mb-6">Add Company</h1>
+<%= render "shared/page_header",
+  breadcrumbs: [["Companies", companies_path], ["Add Company", nil]],
+  title: "Add Company" %>
 
-<div class="bg-white rounded-lg border border-gray-200 p-6 max-w-lg">
-  <%= render "form", company: @company %>
+<div class="card max-w-2xl">
+  <div class="card-header">
+    <h2 class="text-sm font-semibold text-slate-900">New Company</h2>
+    <p class="text-xs text-slate-500 mt-0.5">An enrichment task will be created automatically.</p>
+  </div>
+  <div class="card-body">
+    <%= render "form", company: @company %>
+  </div>
 </div>

@@ -2,7 +2,9 @@ class MeetingsController < ApplicationController
   before_action :find_meeting, only: [:edit, :update, :destroy]
 
   def index
-    @meetings = Meeting.includes(contact: :company).order(scheduled_at: :desc)
+    meetings = Meeting.includes(contact: :company).order(scheduled_at: :desc)
+    @upcoming_meetings = meetings.select { |m| m.scheduled_at && m.scheduled_at >= Time.current && m.scheduled? }
+    @past_meetings = meetings - @upcoming_meetings
   end
 
   def new

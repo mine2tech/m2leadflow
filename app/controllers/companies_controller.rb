@@ -2,7 +2,8 @@ class CompaniesController < ApplicationController
   before_action :find_company, only: [:show, :edit, :update, :destroy]
 
   def index
-    @companies = Company.order(created_at: :desc)
+    @companies = Company.includes(:contacts).order(created_at: :desc)
+    @companies = @companies.where(status: params[:status]) if params[:status].present?
   end
 
   def show

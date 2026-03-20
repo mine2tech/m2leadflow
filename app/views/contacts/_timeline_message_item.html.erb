@@ -1,15 +1,16 @@
-<div class="mb-4 <%= message.outbound? ? 'ml-12' : 'mr-12' %>">
-  <div class="rounded-lg border p-4 <%= message.outbound? ? 'bg-blue-50 border-blue-100' : 'bg-white border-gray-200' %>">
-    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">
+<div class="rounded-xl border p-4 <%= message.outbound? ? 'bg-slate-50 border-slate-200' : 'bg-white border-slate-200 ring-1 ring-emerald-100' %>">
+  <div class="flex items-center justify-between mb-2">
+    <p class="text-xs font-semibold <%= message.outbound? ? 'text-slate-500' : 'text-emerald-600' %>">
       <% if message.outbound? %>
-        You &middot; Sent <%= message.created_at.strftime("%a %b %-d") %>
+        You
       <% else %>
-        <%= contact.name || "Them" %> &middot; Replied <%= message.created_at.strftime("%a %b %-d") %>
+        <%= contact.name || "Them" %>
       <% end %>
     </p>
-    <% if message.subject.present? %>
-      <p class="text-sm font-medium text-gray-800 mb-2"><%= message.subject %></p>
-    <% end %>
-    <p class="text-sm text-gray-800 whitespace-pre-wrap"><%= message.body %></p>
+    <span class="text-xs text-slate-400"><%= message.created_at.strftime("%b %-d, %l:%M %p") %></span>
   </div>
+  <% if message.subject.present? %>
+    <p class="text-sm font-medium text-slate-800 mb-2"><%= message.subject %></p>
+  <% end %>
+  <p class="text-sm text-slate-700 whitespace-pre-wrap"><%= message.body %></p>
 </div>

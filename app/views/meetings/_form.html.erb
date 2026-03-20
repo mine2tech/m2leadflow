@@ -1,6 +1,6 @@
 <%= form_with(model: meeting, class: "space-y-4") do |f| %>
   <% if meeting.errors.any? %>
-    <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded text-sm">
+    <div class="bg-rose-50 border border-rose-200 text-rose-800 px-4 py-3 rounded-lg text-sm">
       <ul class="list-disc list-inside">
         <% meeting.errors.full_messages.each do |msg| %>
           <li><%= msg %></li>
@@ -10,32 +10,37 @@
   <% end %>
 
   <div>
-    <%= f.label :contact_id, "Contact", class: "block text-sm font-medium text-gray-700" %>
-    <%= f.collection_select :contact_id, @contacts, :id, ->(c) { "#{c.name || c.email} (#{c.company.name})" }, { prompt: "Select contact" }, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2 border" %>
+    <label class="form-label">Contact</label>
+    <%= f.collection_select :contact_id, @contacts, :id, ->(c) { "#{c.name || c.email} (#{c.company.name})" }, { prompt: "Select contact" }, class: "form-input" %>
   </div>
 
   <div>
-    <%= f.label :scheduled_at, "Date & Time", class: "block text-sm font-medium text-gray-700" %>
-    <%= f.datetime_local_field :scheduled_at, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2 border" %>
+    <label class="form-label">Date & Time</label>
+    <%= f.datetime_local_field :scheduled_at, class: "form-input" %>
   </div>
 
   <div>
-    <%= f.label :meeting_link, "Meeting Link", class: "block text-sm font-medium text-gray-700" %>
-    <%= f.url_field :meeting_link, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2 border", placeholder: "https://meet.google.com/..." %>
+    <label class="form-label">Meeting Link</label>
+    <div class="relative">
+      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+      </div>
+      <%= f.url_field :meeting_link, class: "form-input pl-9", placeholder: "https://meet.google.com/..." %>
+    </div>
   </div>
 
   <div>
-    <%= f.label :notes, class: "block text-sm font-medium text-gray-700" %>
-    <%= f.text_area :notes, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2 border", rows: 3 %>
+    <label class="form-label">Notes</label>
+    <%= f.text_area :notes, class: "form-input", rows: 3 %>
   </div>
 
   <div>
-    <%= f.label :status, class: "block text-sm font-medium text-gray-700" %>
-    <%= f.select :status, Meeting.statuses.keys.map { |s| [s.humanize, s] }, {}, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2 border" %>
+    <label class="form-label">Status</label>
+    <%= f.select :status, Meeting.statuses.keys.map { |s| [s.humanize, s] }, {}, class: "form-input" %>
   </div>
 
-  <div class="flex gap-3">
-    <%= f.submit class: "bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 cursor-pointer" %>
-    <%= link_to "Cancel", meetings_path, class: "px-4 py-2 rounded-md text-sm text-gray-600 hover:text-gray-900 border border-gray-300" %>
+  <div class="flex gap-3 pt-2 border-t border-slate-100">
+    <%= f.submit class: "btn-primary cursor-pointer" %>
+    <%= link_to "Cancel", meetings_path, class: "btn-secondary" %>
   </div>
 <% end %>

@@ -1,40 +1,89 @@
-<div class="flex items-center justify-between mb-6">
-  <h1 class="text-2xl font-bold text-gray-900">Companies</h1>
-  <%= link_to "Add Company", new_company_path, class: "bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700" %>
+<% content_for(:actions) do %>
+  <%= link_to new_company_path, class: "btn-primary" do %>
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+    Add Company
+  <% end %>
+<% end %>
+<%= render "shared/page_header",
+  title: "Companies",
+  breadcrumbs: [["Companies", nil]],
+  actions: content_for(:actions) %>
+
+<%# Stats grid %>
+<% enriched_count = @companies.count { |c| c.enriched? || c.completed? } %>
+<% with_replies = @companies.count { |c| c.contacts.any?(&:has_reply?) } %>
+<% with_meetings = @companies.count { |c| c.contacts.any? { |ct| ct.meetings.any? } } %>
+<div class="grid grid-cols-4 gap-4 mb-6">
+  <div class="stat-card">
+    <p class="stat-value"><%= @companies.count %></p>
+    <p class="stat-label">Total</p>
+  </div>
+  <div class="stat-card">
+    <p class="stat-value"><%= enriched_count %></p>
+    <p class="stat-label">Enriched</p>
+  </div>
+  <div class="stat-card">
+    <p class="stat-value"><%= with_replies %></p>
+    <p class="stat-label">With Replies</p>
+  </div>
+  <div class="stat-card">
+    <p class="stat-value"><%= with_meetings %></p>
+    <p class="stat-label">Meetings</p>
+  </div>
 </div>
 
-<div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
-  <table class="min-w-full divide-y divide-gray-200">
-    <thead class="bg-gray-50">
-      <tr>
-        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Domain</th>
-        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contacts</th>
-        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created</th>
-        <th class="px-6 py-3"></th>
-      </tr>
-    </thead>
-    <tbody class="divide-y divide-gray-200">
-      <% @companies.each do |company| %>
-        <tr class="hover:bg-gray-50">
-          <td class="px-6 py-4">
-            <%= link_to company.name, company, class: "text-blue-600 hover:text-blue-800 font-medium" %>
-          </td>
-          <td class="px-6 py-4 text-sm text-gray-600"><%= company.domain %></td>
-          <td class="px-6 py-4"><%= render "shared/status_badge", status: company.status %></td>
-          <td class="px-6 py-4 text-sm text-gray-600"><%= company.contacts.count %></td>
-          <td class="px-6 py-4 text-sm text-gray-500"><%= company.created_at.strftime("%b %d, %Y") %></td>
-          <td class="px-6 py-4 text-right">
-            <%= link_to "Edit", edit_company_path(company), class: "text-sm text-gray-600 hover:text-gray-900" %>
-          </td>
-        </tr>
-      <% end %>
-      <% if @companies.empty? %>
-        <tr>
-          <td colspan="6" class="px-6 py-8 text-center text-gray-500">No companies yet. Add your first target company.</td>
-        </tr>
-      <% end %>
-    </tbody>
-  </table>
+<%# Status filter tabs %>
+<div class="flex items-center gap-1 mb-5 bg-slate-100 rounded-lg p-1 w-fit">
+  <%= link_to "All", companies_path, class: "px-3 py-1.5 text-sm font-medium rounded-md transition-colors #{params[:status].blank? ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'}" %>
+  <% %w[new_company processing enriched completed].each do |s| %>
+    <%= link_to s.humanize, companies_path(status: s), class: "px-3 py-1.5 text-sm font-medium rounded-md transition-colors #{params[:status] == s ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'}" %>
+  <% end %>
 </div>
+
+<% if @companies.any? %>
+  <div class="card overflow-hidden">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th scope="col">Company</th>
+          <th scope="col">Status</th>
+          <th scope="col">Contacts</th>
+          <th scope="col">Created</th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @companies.each do |company| %>
+          <tr class="group cursor-pointer" onclick="window.Turbo.visit('<%= company_path(company) %>')">
+            <td>
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
+                  <span class="text-xs font-bold text-slate-600"><%= initials_for(company.name) %></span>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-slate-900 group-hover:text-indigo-600 transition-colors"><%= company.name %></p>
+                  <p class="text-xs text-slate-500"><%= company.domain %></p>
+                </div>
+              </div>
+            </td>
+            <td><%= render "shared/status_badge", status: company.status %></td>
+            <td class="text-sm text-slate-600"><%= company.contacts.size %></td>
+            <td class="text-sm text-slate-500"><%= time_ago_in_words(company.created_at) %> ago</td>
+            <td class="text-right">
+              <%= link_to "Edit", edit_company_path(company), class: "text-sm text-slate-400 hover:text-slate-700 transition-colors", onclick: "event.stopPropagation()" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <div class="card">
+    <%= render "shared/empty_state",
+      title: "No companies yet",
+      description: "Add your first target company to start building your pipeline.",
+      cta_text: "Add Company",
+      cta_path: new_company_path,
+      icon: '<svg class="empty-state-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>' %>
+  </div>
+<% end %>

@@ -1,47 +1,58 @@
-<div class="flex items-center justify-between mb-6">
-  <h1 class="text-2xl font-bold text-gray-900">Drafts</h1>
-  <div class="flex gap-2 text-sm">
-    <%= link_to "All", drafts_path, class: "px-3 py-1 rounded-md #{params[:status].blank? ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}" %>
-    <%= link_to "Draft", drafts_path(status: :draft), class: "px-3 py-1 rounded-md #{params[:status] == 'draft' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}" %>
-    <%= link_to "Approved", drafts_path(status: :approved), class: "px-3 py-1 rounded-md #{params[:status] == 'approved' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}" %>
-    <%= link_to "Sent", drafts_path(status: :sent), class: "px-3 py-1 rounded-md #{params[:status] == 'sent' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}" %>
-  </div>
+<%= render "shared/page_header",
+  title: "Drafts",
+  breadcrumbs: [["Drafts", nil]] %>
+
+<%# Status filter tabs %>
+<div class="flex items-center gap-1 mb-6 bg-slate-100 rounded-lg p-1 w-fit">
+  <% tabs = [["All", drafts_path, params[:status].blank?],
+             ["Draft", drafts_path(status: :draft), params[:status] == "draft"],
+             ["Approved", drafts_path(status: :approved), params[:status] == "approved"],
+             ["Sent", drafts_path(status: :sent), params[:status] == "sent"]] %>
+  <% tabs.each do |label, path, active| %>
+    <%= link_to label, path, class: "px-3 py-1.5 text-sm font-medium rounded-md transition-colors #{active ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'}" %>
+  <% end %>
 </div>
 
-<div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
-  <table class="min-w-full divide-y divide-gray-200">
-    <thead class="bg-gray-50">
-      <tr>
-        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contact</th>
-        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Company</th>
-        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Subject</th>
-        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created</th>
-        <th class="px-6 py-3"></th>
-      </tr>
-    </thead>
-    <tbody class="divide-y divide-gray-200">
-      <% @drafts.each do |draft| %>
-        <tr class="hover:bg-gray-50">
-          <td class="px-6 py-4 text-sm">
-            <%= link_to draft.contact.name || draft.contact.email, draft.contact, class: "text-blue-600 hover:text-blue-800" %>
-          </td>
-          <td class="px-6 py-4 text-sm text-gray-600"><%= draft.contact.company.name %></td>
-          <td class="px-6 py-4">
-            <%= link_to draft.subject || "(no subject)", draft, class: "text-sm font-medium text-gray-900 hover:text-blue-600" %>
-          </td>
-          <td class="px-6 py-4"><%= render "shared/status_badge", status: draft.status %></td>
-          <td class="px-6 py-4 text-sm text-gray-500"><%= draft.created_at.strftime("%b %d") %></td>
-          <td class="px-6 py-4 text-right">
-            <%= link_to "View", draft, class: "text-sm text-gray-600 hover:text-gray-900" %>
-          </td>
-        </tr>
-      <% end %>
-      <% if @drafts.empty? %>
-        <tr>
-          <td colspan="6" class="px-6 py-8 text-center text-gray-500">No drafts yet.</td>
-        </tr>
-      <% end %>
-    </tbody>
-  </table>
-</div>
+<% if @drafts.any? %>
+  <div class="grid gap-4">
+    <% @drafts.each do |draft| %>
+      <div class="card-interactive group p-5 flex items-start gap-4">
+        <div class="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
+          <span class="text-xs font-bold text-slate-600"><%= initials_for(draft.contact.name) %></span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center justify-between mb-1">
+            <div class="flex items-center gap-2">
+              <%= link_to draft.contact, class: "text-sm font-medium text-slate-900 hover:text-indigo-600 transition-colors" do %>
+                <%= draft.contact.name || draft.contact.email %>
+              <% end %>
+              <span class="text-xs text-slate-400">&middot;</span>
+              <span class="text-xs text-slate-500"><%= draft.contact.company.name %></span>
+            </div>
+            <%= render "shared/status_badge", status: draft.status %>
+          </div>
+          <%= link_to draft, class: "block group/link" do %>
+            <p class="text-sm font-medium text-slate-800 group-hover/link:text-indigo-600 transition-colors"><%= draft.subject || "(no subject)" %></p>
+            <p class="text-sm text-slate-500 mt-1 line-clamp-2"><%= draft.body %></p>
+          <% end %>
+        </div>
+        <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 pt-1">
+          <% unless draft.sent? %>
+            <% if draft.draft? %>
+              <%= button_to "Approve", approve_draft_path(draft), method: :post, class: "btn-primary btn-sm" %>
+            <% end %>
+            <%= link_to "Edit", edit_draft_path(draft), class: "btn-ghost btn-sm" %>
+          <% end %>
+          <%= link_to "View", draft, class: "btn-ghost btn-sm" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% else %>
+  <div class="card">
+    <%= render "shared/empty_state",
+      title: "No drafts found",
+      description: "Drafts are created automatically when contacts are added to companies.",
+      icon: '<svg class="empty-state-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>' %>
+  </div>
+<% end %>

@@ -1,0 +1,156 @@
+<%= render "shared/page_header", title: "Dashboard", subtitle: "Your outbound pipeline at a glance" %>
+
+<%# Stats Grid %>
+<div class="grid grid-cols-4 gap-4 mb-8">
+  <div class="stat-card">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center">
+        <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+      </div>
+      <div>
+        <p class="stat-value"><%= @companies_count %></p>
+        <p class="stat-label">Companies</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-lg bg-sky-100 flex items-center justify-center">
+        <svg class="w-5 h-5 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+      </div>
+      <div>
+        <p class="stat-value"><%= @emails_sent %></p>
+        <p class="stat-label">Emails Sent</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
+        <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
+      </div>
+      <div>
+        <p class="stat-value"><%= @replies_count %></p>
+        <p class="stat-label">Replies</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
+        <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      </div>
+      <div>
+        <p class="stat-value"><%= @reply_rate %>%</p>
+        <p class="stat-label">Reply Rate</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%# Pipeline Funnel %>
+<div class="card mb-8">
+  <div class="card-header">
+    <h2 class="text-sm font-semibold text-slate-900">Pipeline Funnel</h2>
+  </div>
+  <div class="card-body">
+    <% total = @pipeline_stages.values.sum.to_f %>
+    <% if total > 0 %>
+      <div class="flex rounded-lg overflow-hidden h-8 mb-4">
+        <% stage_config = {
+          pending: { color: "bg-slate-400", label: "Pending" },
+          drafted: { color: "bg-amber-400", label: "Drafted" },
+          sent:    { color: "bg-sky-400", label: "Sent" },
+          replied: { color: "bg-emerald-400", label: "Replied" },
+          meeting: { color: "bg-indigo-500", label: "Meeting" }
+        } %>
+        <% stage_config.each do |stage, config| %>
+          <% count = @pipeline_stages[stage] || 0 %>
+          <% pct = (count / total * 100).round(1) %>
+          <% next if pct == 0 %>
+          <div class="<%= config[:color] %> flex items-center justify-center text-xs font-medium text-white" style="width: <%= pct %>%" title="<%= config[:label] %>: <%= count %>">
+            <% if pct > 8 %><%= count %><% end %>
+          </div>
+        <% end %>
+      </div>
+      <div class="flex items-center gap-4 flex-wrap">
+        <% stage_config.each do |stage, config| %>
+          <div class="flex items-center gap-1.5 text-xs text-slate-600">
+            <span class="w-2.5 h-2.5 rounded-sm <%= config[:color] %>"></span>
+            <%= config[:label] %> (<%= @pipeline_stages[stage] || 0 %>)
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="text-sm text-slate-400 text-center py-4">No contacts in pipeline yet.</p>
+    <% end %>
+  </div>
+</div>
+
+<%# Two-column bottom %>
+<div class="grid grid-cols-2 gap-6">
+  <%# Recent Replies %>
+  <div class="card">
+    <div class="card-header flex items-center justify-between">
+      <h2 class="text-sm font-semibold text-slate-900">Recent Replies</h2>
+      <%= link_to "View all", followups_path, class: "text-xs text-indigo-600 hover:text-indigo-700 font-medium" %>
+    </div>
+    <div class="divide-y divide-slate-100">
+      <% if @recent_replies.any? %>
+        <% @recent_replies.each do |msg| %>
+          <% contact = msg.email_thread&.contact %>
+          <% next unless contact %>
+          <div class="px-6 py-3 flex items-center gap-3 hover:bg-slate-50/50 transition-colors">
+            <div class="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0">
+              <span class="text-xs font-bold text-emerald-700"><%= initials_for(contact.name) %></span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <%= link_to contact, class: "block" do %>
+                <p class="text-sm font-medium text-slate-900 truncate"><%= contact.name || contact.email %></p>
+                <p class="text-xs text-slate-500 truncate"><%= msg.subject || "No subject" %></p>
+              <% end %>
+            </div>
+            <span class="text-xs text-slate-400 flex-shrink-0"><%= time_ago_in_words(msg.created_at) %></span>
+          </div>
+        <% end %>
+      <% else %>
+        <div class="px-6 py-8 text-center">
+          <p class="text-sm text-slate-400">No replies yet</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Drafts to Review %>
+  <div class="card">
+    <div class="card-header flex items-center justify-between">
+      <h2 class="text-sm font-semibold text-slate-900">Drafts to Review</h2>
+      <%= link_to "View all", drafts_path(status: :draft), class: "text-xs text-indigo-600 hover:text-indigo-700 font-medium" %>
+    </div>
+    <div class="divide-y divide-slate-100">
+      <% if @drafts_to_review.any? %>
+        <% @drafts_to_review.each do |draft| %>
+          <div class="px-6 py-3 flex items-center gap-3 hover:bg-slate-50/50 transition-colors">
+            <div class="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
+              <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <%= link_to draft, class: "block" do %>
+                <p class="text-sm font-medium text-slate-900 truncate"><%= draft.contact.name || draft.contact.email %></p>
+                <p class="text-xs text-slate-500 truncate"><%= draft.subject || "No subject" %></p>
+              <% end %>
+            </div>
+            <%= link_to "Review", draft, class: "btn-ghost btn-sm text-xs flex-shrink-0" %>
+          </div>
+        <% end %>
+      <% else %>
+        <div class="px-6 py-8 text-center">
+          <p class="text-sm text-slate-400">No drafts pending review</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
