@@ -1,0 +1,11 @@
+<div class="grid gap-0 min-h-screen -mx-6 -my-6" style="grid-template-columns: 380px 1fr;">
+  <%# Left panel — actions + context %>
+  <div class="border-r border-gray-200 bg-white overflow-y-auto px-5 py-6">
+    <%= render 'contacts/actions_panel', contact: @contact, drafts: @drafts, followups: @followups, meetings: @meetings %>
+  </div>
+
+  <%# Right panel — conversation thread %>
+  <div class="overflow-y-auto bg-gray-50 px-8 py-6">
+    <%= render 'contacts/conversation_timeline', timeline: @timeline, contact: @contact %>
+  </div>
+</div>

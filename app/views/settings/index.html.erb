@@ -1,0 +1,74 @@
+<h1 class="text-2xl font-bold text-gray-900 mb-6">Settings</h1>
+
+<div class="space-y-8 max-w-2xl">
+  <%# Followup Settings %>
+  <div class="bg-white rounded-lg border border-gray-200 p-6">
+    <h2 class="text-lg font-semibold text-gray-900 mb-4">Followup Defaults</h2>
+    <%= form_with url: settings_followup_defaults_path, method: :patch, class: "space-y-4" do |f| %>
+      <div>
+        <%= f.label :followup_delay_days, "Days before followup", class: "block text-sm font-medium text-gray-700" %>
+        <%= f.number_field :followup_delay_days, value: @followup_delay_days, min: 1, max: 30, class: "mt-1 block w-32 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2 border" %>
+      </div>
+
+      <div>
+        <%= f.label :max_followups, "Max followups per contact", class: "block text-sm font-medium text-gray-700" %>
+        <%= f.number_field :max_followups, value: @max_followups, min: 1, max: 10, class: "mt-1 block w-32 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2 border" %>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <%= f.check_box :auto_send_followups, checked: @auto_send_followups, class: "rounded border-gray-300 text-blue-600 focus:ring-blue-500" %>
+        <%= f.label :auto_send_followups, "Auto-send followups (without manual review)", class: "text-sm text-gray-700" %>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <%= f.check_box :followup_use_ai, checked: @followup_use_ai, class: "rounded border-gray-300 text-blue-600 focus:ring-blue-500" %>
+        <%= f.label :followup_use_ai, "Use AI (Claude) to generate followup drafts", class: "text-sm text-gray-700" %>
+      </div>
+
+      <%= f.submit "Save Settings", class: "bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 cursor-pointer" %>
+    <% end %>
+  </div>
+
+  <%# Gmail Accounts %>
+  <div class="bg-white rounded-lg border border-gray-200 p-6">
+    <h2 class="text-lg font-semibold text-gray-900 mb-4">Gmail Accounts</h2>
+    <% if @gmail_accounts.any? %>
+      <div class="space-y-3 mb-4">
+        <% @gmail_accounts.each do |account| %>
+          <div class="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+            <div>
+              <span class="text-sm font-medium text-gray-900"><%= account.email %></span>
+              <span class="ml-2"><%= render "shared/status_badge", status: account.status %></span>
+            </div>
+            <span class="text-xs text-gray-500">
+              Expires: <%= account.token_expires_at&.strftime("%b %d, %Y %H:%M") || "—" %>
+            </span>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="text-sm text-gray-500 mb-4">No Gmail accounts connected. Connect one to enable reply tracking.</p>
+    <% end %>
+    <%= link_to "Connect Gmail Account", auth_gmail_path, class: "bg-green-600 text-white px-4 py-2 rounded-md text-sm hover:bg-green-700" %>
+  </div>
+
+  <%# Apollo Accounts %>
+  <div class="bg-white rounded-lg border border-gray-200 p-6">
+    <h2 class="text-lg font-semibold text-gray-900 mb-4">Apollo Accounts</h2>
+    <% if @apollo_accounts.any? %>
+      <div class="space-y-3">
+        <% @apollo_accounts.each do |account| %>
+          <div class="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+            <div>
+              <span class="text-sm font-medium text-gray-900"><%= account.email %></span>
+              <span class="ml-2"><%= render "shared/status_badge", status: account.status %></span>
+            </div>
+            <span class="text-sm text-gray-600"><%= account.credits_remaining %> credits</span>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="text-sm text-gray-500">No Apollo accounts configured. Add via API or Rails console.</p>
+    <% end %>
+  </div>
+</div>

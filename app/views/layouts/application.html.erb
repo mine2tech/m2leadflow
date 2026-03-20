@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "M2Leadflow" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="application-name" content="M2Leadflow">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= yield :head %>
+    <link rel="icon" href="/icon.png" type="image/png">
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="bg-gray-50 min-h-screen flex">
+    <%= render 'shared/sidebar' %>
+    <div class="ml-56 flex-1 min-h-screen flex flex-col">
+      <% if notice.present? %>
+        <div class="px-6 pt-4">
+          <div class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded text-sm">
+            <%= notice %>
+          </div>
+        </div>
+      <% end %>
+      <% if alert.present? %>
+        <div class="px-6 pt-4">
+          <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded text-sm">
+            <%= alert %>
+          </div>
+        </div>
+      <% end %>
+      <main class="flex-1 px-6 py-6">
+        <%= yield %>
+      </main>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,27 @@
+<div class="mb-4">
+  <%= link_to "← #{@draft.contact.name || @draft.contact.email}", @draft.contact, class: "text-sm text-blue-600 hover:text-blue-800" %>
+</div>
+<h1 class="text-xl font-semibold text-gray-900 mb-6">Edit Draft</h1>
+
+<div class="bg-white rounded-lg border border-gray-200 p-6 max-w-3xl">
+  <p class="text-sm text-gray-500 mb-4">
+    To: <%= @draft.contact.name || "" %> &lt;<%= @draft.contact.email %>&gt;
+  </p>
+
+  <%= form_with(model: @draft, class: "space-y-4") do |f| %>
+    <div>
+      <%= f.label :subject, class: "block text-sm font-medium text-gray-700" %>
+      <%= f.text_field :subject, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2 border" %>
+    </div>
+
+    <div>
+      <%= f.label :body, class: "block text-sm font-medium text-gray-700" %>
+      <%= f.text_area :body, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-3 py-2 border font-mono", rows: 15 %>
+    </div>
+
+    <div class="flex gap-3">
+      <%= f.submit "Save Draft", class: "bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 cursor-pointer" %>
+      <%= link_to "Cancel", contact_path(@draft.contact), class: "px-4 py-2 rounded-md text-sm text-gray-600 hover:text-gray-900 border border-gray-300" %>
+    </div>
+  <% end %>
+</div>

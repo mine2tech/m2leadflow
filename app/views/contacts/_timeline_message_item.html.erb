@@ -1,0 +1,15 @@
+<div class="mb-4 <%= message.outbound? ? 'ml-12' : 'mr-12' %>">
+  <div class="rounded-lg border p-4 <%= message.outbound? ? 'bg-blue-50 border-blue-100' : 'bg-white border-gray-200' %>">
+    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">
+      <% if message.outbound? %>
+        You &middot; Sent <%= message.created_at.strftime("%a %b %-d") %>
+      <% else %>
+        <%= contact.name || "Them" %> &middot; Replied <%= message.created_at.strftime("%a %b %-d") %>
+      <% end %>
+    </p>
+    <% if message.subject.present? %>
+      <p class="text-sm font-medium text-gray-800 mb-2"><%= message.subject %></p>
+    <% end %>
+    <p class="text-sm text-gray-800 whitespace-pre-wrap"><%= message.body %></p>
+  </div>
+</div>

@@ -1,0 +1,47 @@
+<div class="max-w-2xl mx-auto">
+  <% if timeline.empty? %>
+    <%# Empty state %>
+    <div class="flex flex-col items-center justify-center py-24 text-center">
+      <svg class="w-12 h-12 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+          d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+      </svg>
+      <p class="text-sm font-medium text-gray-500">No conversation yet</p>
+      <p class="text-xs text-gray-400 mt-1">Generate an AI draft to get started</p>
+    </div>
+  <% else %>
+    <% prev_at = nil %>
+    <% last_outbound = nil %>
+
+    <% timeline.each do |item| %>
+      <%# Date separator if > 3 days gap %>
+      <% if prev_at && (item[:at] - prev_at) > 3.days %>
+        <div class="flex items-center gap-3 my-5">
+          <div class="flex-1 border-t border-gray-100"></div>
+          <span class="text-xs text-gray-400"><%= item[:at].strftime("%b %-d, %Y") %></span>
+          <div class="flex-1 border-t border-gray-100"></div>
+        </div>
+      <% end %>
+
+      <% if item[:type] == :draft %>
+        <%= render 'contacts/timeline_draft_item', draft: item[:record] %>
+      <% elsif item[:type] == :message %>
+        <% msg = item[:record] %>
+        <%# Show "awaiting reply" once, before the first inbound after an outbound %>
+        <% if msg.inbound? && last_outbound %>
+          <%= render 'contacts/awaiting_reply', sent_at: last_outbound.created_at %>
+          <% last_outbound = nil %>
+        <% end %>
+        <%= render 'contacts/timeline_message_item', message: msg, contact: contact %>
+        <% last_outbound = msg if msg.outbound? %>
+      <% end %>
+
+      <% prev_at = item[:at] %>
+    <% end %>
+
+    <%# Show "awaiting reply" after last outbound if no reply yet %>
+    <% if last_outbound && !contact.has_reply? %>
+      <%= render 'contacts/awaiting_reply', sent_at: last_outbound.created_at %>
+    <% end %>
+  <% end %>
+</div>
