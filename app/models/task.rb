@@ -1,5 +1,7 @@
 class Task < ApplicationRecord
-  VALID_TYPES = %w[enrich_company draft_email].freeze
+  VALID_TYPES = %w[enrich_company draft_email company_research].freeze
+
+  belongs_to :user, optional: true
 
   enum :status, { pending: 0, claimed: 1, in_progress: 2, completed: 3, failed: 4 }
 

@@ -11,6 +11,9 @@ class CompaniesController < ApplicationController
                   .includes(:drafts, :meetings, email_threads: :messages)
                   .order(created_at: :desc)
     @contacts = @contacts.select { |c| c.pipeline_stage.to_s == params[:stage] } if params[:stage].present?
+
+    @activities = @company.activities.includes(:user).order(created_at: :desc).limit(50)
+    @comments = @company.comments.includes(:user).order(created_at: :asc)
   end
 
   def new
@@ -48,6 +51,8 @@ class CompaniesController < ApplicationController
   end
 
   def company_params
-    params.require(:company).permit(:name, :domain, :notes, :status)
+    params.require(:company).permit(:name, :domain, :notes, :status, :industry, :employee_count,
+      :revenue_range, :funding_info, :tech_stack, :recent_breaches, :security_posture,
+      :headquarters, :website_description)
   end
 end

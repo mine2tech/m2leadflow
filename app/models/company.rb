@@ -1,5 +1,7 @@
 class Company < ApplicationRecord
   has_many :contacts, dependent: :destroy
+  has_many :comments, as: :commentable, dependent: :destroy
+  has_many :activities, as: :trackable, dependent: :destroy
 
   enum :status, { new_company: 0, processing: 1, enriched: 2, completed: 3 }
 

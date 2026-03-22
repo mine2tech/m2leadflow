@@ -26,7 +26,9 @@ module Api
         if Company.exists?(domain: company_data[:domain])
           skipped << { domain: company_data[:domain], reason: "already exists" }
         else
-          company = Company.new(company_data.permit(:name, :domain, :notes))
+          company = Company.new(company_data.permit(:name, :domain, :notes, :industry, :employee_count,
+            :revenue_range, :funding_info, :tech_stack, :recent_breaches, :security_posture,
+            :headquarters, :website_description))
           if company.save
             created << { id: company.id, name: company.name, domain: company.domain }
           else
@@ -41,7 +43,9 @@ module Api
     private
 
     def company_params
-      params.require(:company).permit(:name, :domain, :notes)
+      params.require(:company).permit(:name, :domain, :notes, :industry, :employee_count,
+        :revenue_range, :funding_info, :tech_stack, :recent_breaches, :security_posture,
+        :headquarters, :website_description)
     end
   end
 end

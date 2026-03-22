@@ -204,15 +204,39 @@ curl -s -X POST \
           "source": "apollo",
           "confidence_score": 0.95
         }
-      ]
+      ],
+      "company_data": {
+        "industry": "Financial Technology",
+        "employee_count": 2500,
+        "revenue_range": "$100M-$500M",
+        "funding_info": "Series C, $120M raised",
+        "tech_stack": "AWS, Kubernetes, React, Python",
+        "recent_breaches": "No known breaches",
+        "security_posture": "SOC 2 Type II certified, ISO 27001",
+        "headquarters": "San Francisco, CA",
+        "website_description": "Enterprise payment processing platform"
+      }
     }
   }' \
   $API_BASE/tasks/$TASK_ID/complete
 ```
 
+The `company_data` object is optional but highly recommended. It stores enrichment intelligence in the company record. Fields:
+- `industry` — company's primary industry
+- `employee_count` — approximate headcount
+- `revenue_range` — estimated revenue bracket
+- `funding_info` — funding stage and total raised
+- `tech_stack` — known technologies used
+- `recent_breaches` — any known security incidents
+- `security_posture` — certifications, compliance status
+- `headquarters` — HQ location
+- `website_description` — what the company does
+- Any extra fields are stored in a flexible `enrichment_data` JSON column
+
 The system will automatically:
 - Save each contact (deduplicating by email)
 - Create `draft_email` tasks for each new contact
+- Store company enrichment data in the company record
 - Mark the company as "enriched"
 
 ---
@@ -290,6 +314,77 @@ curl -s -X POST \
 ```
 
 The system will automatically create a Draft that the user reviews before sending.
+
+---
+
+#### Task Type: `company_research`
+
+**Goal**: Find companies matching specific criteria for outbound prospecting.
+
+**Payload contains**:
+```json
+{
+  "criteria": {
+    "industry": "fintech",
+    "trend": "recently_breached",
+    "count": 10,
+    "employee_count_min": 500,
+    "employee_count_max": 5000
+  }
+}
+```
+
+**How to execute**:
+
+1. **Interpret the criteria**:
+   - `industry` — target industry vertical
+   - `trend` — what makes them relevant now: `"recently_breached"`, `"recently_funded"`, `"rapid_growth"`, `"compliance_deadline"`, or any other security-relevant trigger
+   - `count` — how many companies to find (default: 10)
+   - `employee_count_min/max` — size filters (optional)
+
+2. **Research companies**:
+   - Web search for companies matching the criteria (e.g., "fintech companies recently breached 2025-2026")
+   - Check news sources for recent security incidents, funding rounds, compliance changes
+   - Verify company details (domain, approximate size, industry)
+   - Prioritize companies that are strong fits for Mine2's cyber deception product
+
+3. **What to collect per company**:
+   - `name` (company name)
+   - `domain` (primary domain, e.g., "acme.com")
+   - `industry` (specific vertical)
+   - `employee_count` (approximate headcount)
+   - `funding_info` (funding stage/amount if known)
+   - `recent_breaches` (breach details if the trend is security-related)
+   - `notes` (why this company is a good prospect)
+   - Any other enrichment fields: `revenue_range`, `tech_stack`, `security_posture`, `headquarters`, `website_description`
+
+**Submit result**:
+```bash
+curl -s -X POST \
+  -H "X-Api-Key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "result": {
+      "companies": [
+        {
+          "name": "FinanceApp Inc",
+          "domain": "financeapp.com",
+          "industry": "Fintech",
+          "employee_count": 1200,
+          "funding_info": "Series B, $45M raised",
+          "recent_breaches": "Customer data breach reported March 2026",
+          "notes": "Post-breach — likely evaluating deception technology"
+        }
+      ]
+    }
+  }' \
+  $API_BASE/tasks/$TASK_ID/complete
+```
+
+The system will automatically:
+- Create a Company record for each result (deduplicating by domain)
+- Auto-trigger an `enrich_company` task for each new company (which finds contacts)
+- Store any enrichment fields directly in the company record
 
 ---
 

@@ -6,6 +6,14 @@ class ContactsController < ApplicationController
     @followups = @contact.followups.order(sequence_number: :asc)
     @meetings = @contact.meetings.order(scheduled_at: :desc)
     @timeline = build_timeline
+
+    # Activity & comments for right panel
+    @activities = Activity.where(trackable: @contact)
+                          .or(Activity.where(trackable_type: "Company", trackable_id: @contact.company_id))
+                          .order(created_at: :desc)
+                          .includes(:user)
+                          .limit(50)
+    @comments = @contact.comments.includes(:user).order(created_at: :asc)
   end
 
   def new
@@ -34,6 +42,17 @@ class ContactsController < ApplicationController
     else
       render :edit, status: :unprocessable_entity
     end
+  end
+
+  def reply
+    @contact = Contact.find(params[:id])
+    @thread = @contact.email_threads.find(params[:thread_id])
+    @messages = @thread.messages.order(created_at: :asc)
+    @draft = Draft.new(
+      contact: @contact,
+      email_thread: @thread,
+      subject: "Re: #{@thread.messages.order(:created_at).first&.subject}"
+    )
   end
 
   private

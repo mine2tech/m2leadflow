@@ -34,6 +34,43 @@
   </div>
 </div>
 
+<%# Enrichment data %>
+<% enrichment_fields = {
+  "Industry" => @company.industry,
+  "Employees" => @company.employee_count,
+  "Revenue" => @company.revenue_range,
+  "Funding" => @company.funding_info,
+  "Headquarters" => @company.headquarters,
+  "Tech Stack" => @company.tech_stack,
+  "Security Posture" => @company.security_posture,
+  "Recent Breaches" => @company.recent_breaches,
+  "Description" => @company.website_description
+} %>
+<% visible_fields = enrichment_fields.select { |_, v| v.present? } %>
+<% if visible_fields.any? %>
+  <div class="card mb-6">
+    <div class="card-header">
+      <h3 class="text-sm font-semibold text-slate-900">Company Intelligence</h3>
+    </div>
+    <div class="card-body">
+      <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+        <% visible_fields.each do |label, value| %>
+          <div>
+            <dt class="text-xs font-medium text-slate-500 uppercase tracking-wide"><%= label %></dt>
+            <dd class="text-sm text-slate-900 mt-0.5"><%= simple_format(value.to_s, class: "text-sm text-slate-900") %></dd>
+          </div>
+        <% end %>
+      </dl>
+      <% if @company.enrichment_data.present? && @company.enrichment_data.any? %>
+        <details class="mt-4 pt-4 border-t border-slate-100">
+          <summary class="text-xs font-medium text-slate-500 cursor-pointer hover:text-slate-700">Additional Data</summary>
+          <pre class="mt-2 text-xs text-slate-600 bg-slate-50 rounded-lg p-3 overflow-x-auto"><%= JSON.pretty_generate(@company.enrichment_data) %></pre>
+        </details>
+      <% end %>
+    </div>
+  </div>
+<% end %>
+
 <%# Pipeline progress bar %>
 <% all_contacts = @company.contacts %>
 <% stage_counts = all_contacts.group_by(&:pipeline_stage).transform_values(&:count) %>
@@ -78,7 +115,7 @@
 
 <%# Contacts table %>
 <% if @contacts.any? %>
-  <div class="card overflow-hidden">
+  <div class="card overflow-hidden overflow-x-auto">
     <table class="data-table">
       <thead>
         <tr>
@@ -104,7 +141,7 @@
               </div>
             </td>
             <td class="text-sm text-slate-600"><%= contact.role || "—" %></td>
-            <td><%= render "shared/status_badge", status: "#{stage}_stage".sub("_stage_stage", "_stage") %></td>
+            <td><%= render "shared/status_badge", status: stage %></td>
             <td class="text-sm text-slate-500">
               <% last_at = contact.last_outbound_at || contact.updated_at %>
               <%= time_ago_in_words(last_at) %> ago
@@ -123,3 +160,8 @@
       cta_path: new_company_contact_path(@company) %>
   </div>
 <% end %>
+
+<%# Activity & Comments %>
+<div class="mt-6">
+  <%= render "shared/activity_panel", activities: @activities, commentable: @company %>
+</div>

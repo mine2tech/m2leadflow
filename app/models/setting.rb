@@ -25,4 +25,12 @@ class Setting < ApplicationRecord
   def self.followup_use_ai?
     get("followup_use_ai", "true") == "true"
   end
+
+  def self.slack_webhook_url
+    get("slack_webhook_url")
+  end
+
+  def self.reply_reminder_hours
+    get("reply_reminder_hours", "24").to_i
+  end
 end

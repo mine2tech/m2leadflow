@@ -1,0 +1,7 @@
+<%= turbo_stream.append "activity-feed" do %>
+  <%= render "shared/activity_item", activity: @activity %>
+<% end %>
+
+<%= turbo_stream.replace "comment-form" do %>
+  <%= render "shared/comment_form", commentable: @commentable %>
+<% end %>

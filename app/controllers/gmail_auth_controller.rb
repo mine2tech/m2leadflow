@@ -27,7 +27,7 @@ class GmailAuthController < ApplicationController
     end
 
     redirect_to settings_path, notice: "Gmail account connected: #{profile.email_address}"
-  rescue => e
+  rescue StandardError => e
     redirect_to settings_path, alert: "Gmail connection failed: #{e.message}"
   end
 

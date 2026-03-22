@@ -1,18 +1,27 @@
 Rails.application.routes.draw do
+  devise_for :users, controllers: { sessions: "users/sessions", passwords: "users/passwords" }
+
   get "up" => "rails/health#show", as: :rails_health_check
 
   root "dashboard#index"
 
   resources :companies do
     resources :contacts, only: [:new, :create]
+    resources :comments, only: [:create]
   end
 
-  resources :contacts, only: [:show, :edit, :update]
+  resources :contacts, only: [:show, :edit, :update] do
+    resources :comments, only: [:create]
+    member do
+      get :reply
+    end
+  end
 
-  resources :drafts, only: [:index, :show, :edit, :update] do
+  resources :drafts, only: [:index, :show, :new, :create, :edit, :update] do
     member do
       post :approve
       post :send_email
+      post :send_later
     end
   end
 
@@ -24,14 +33,18 @@ Rails.application.routes.draw do
 
   resources :meetings
 
-  resources :task_monitor, only: [:index] do
+  resources :task_monitor, only: [:index, :new, :create] do
     member do
       post :retry_task
     end
   end
 
+  # Admin: user management
+  resources :users, except: [:show]
+
   get "settings", to: "settings#index"
   patch "settings/followup_defaults", to: "settings#update_followup_defaults"
+  patch "settings/slack", to: "settings#update_slack_settings"
 
   # Gmail OAuth
   get "auth/gmail", to: "gmail_auth#redirect"

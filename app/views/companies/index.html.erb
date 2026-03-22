@@ -13,7 +13,7 @@
 <% enriched_count = @companies.count { |c| c.enriched? || c.completed? } %>
 <% with_replies = @companies.count { |c| c.contacts.any?(&:has_reply?) } %>
 <% with_meetings = @companies.count { |c| c.contacts.any? { |ct| ct.meetings.any? } } %>
-<div class="grid grid-cols-4 gap-4 mb-6">
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
   <div class="stat-card">
     <p class="stat-value"><%= @companies.count %></p>
     <p class="stat-label">Total</p>
@@ -33,7 +33,7 @@
 </div>
 
 <%# Status filter tabs %>
-<div class="flex items-center gap-1 mb-5 bg-slate-100 rounded-lg p-1 w-fit">
+<div class="flex items-center gap-1 mb-5 bg-slate-100 rounded-lg p-1 w-fit overflow-x-auto flex-nowrap">
   <%= link_to "All", companies_path, class: "px-3 py-1.5 text-sm font-medium rounded-md transition-colors #{params[:status].blank? ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'}" %>
   <% %w[new_company processing enriched completed].each do |s| %>
     <%= link_to s.humanize, companies_path(status: s), class: "px-3 py-1.5 text-sm font-medium rounded-md transition-colors #{params[:status] == s ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'}" %>
@@ -41,7 +41,7 @@
 </div>
 
 <% if @companies.any? %>
-  <div class="card overflow-hidden">
+  <div class="card overflow-hidden overflow-x-auto">
     <table class="data-table">
       <thead>
         <tr>

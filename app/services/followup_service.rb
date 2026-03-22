@@ -25,7 +25,7 @@ class FollowupService
           task_type: "draft_email",
           payload: {
             contact_id: contact.id,
-            company_context: contact.company.slice(:name, :domain, :notes),
+            company_context: contact.company&.slice(:name, :domain, :notes) || {},
             contact: { name: contact.name, role: contact.role },
             is_followup: true,
             sequence_number: sequence
@@ -44,6 +44,8 @@ class FollowupService
           EmailSendingService.call(draft)
         end
       end
+    rescue StandardError => e
+      Rails.logger.error("FollowupService: Error processing contact #{contact.id}: #{e.message}")
     end
   end
 

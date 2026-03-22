@@ -86,6 +86,8 @@ module Api
         TaskResultProcessors::EnrichCompany.call(task)
       when "draft_email"
         TaskResultProcessors::DraftEmail.call(task)
+      when "company_research"
+        TaskResultProcessors::CompanyResearch.call(task)
       end
     end
   end

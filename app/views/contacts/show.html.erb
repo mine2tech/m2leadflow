@@ -1,11 +1,17 @@
-<div class="grid gap-0 min-h-screen -mx-8 -my-6" style="grid-template-columns: 380px 1fr;">
+<%# Mobile: stacked layout. Desktop: 3-column panels %>
+<div class="lg:grid lg:gap-0 lg:min-h-screen lg:-mx-8 lg:-my-6" style="grid-template-columns: 340px 1fr 340px;">
   <%# Left panel — actions + context %>
-  <div class="border-r border-slate-200 bg-white overflow-y-auto px-5 py-6">
+  <div class="border-b lg:border-b-0 lg:border-r border-slate-200 bg-white overflow-y-auto px-4 py-5 sm:px-5 sm:py-6">
     <%= render 'contacts/actions_panel', contact: @contact, drafts: @drafts, followups: @followups, meetings: @meetings %>
   </div>
 
-  <%# Right panel — conversation thread %>
-  <div class="overflow-y-auto bg-slate-50 px-8 py-6">
+  <%# Center panel — conversation thread %>
+  <div class="overflow-y-auto bg-slate-50 px-4 py-5 sm:px-8 sm:py-6">
     <%= render 'contacts/conversation_timeline', timeline: @timeline, contact: @contact %>
+  </div>
+
+  <%# Right panel — activity & comments %>
+  <div class="border-t lg:border-t-0 lg:border-l border-slate-200 bg-white overflow-y-auto">
+    <%= render 'shared/activity_panel', activities: @activities, commentable: @contact %>
   </div>
 </div>

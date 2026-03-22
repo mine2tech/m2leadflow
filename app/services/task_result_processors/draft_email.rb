@@ -5,16 +5,21 @@ module TaskResultProcessors
       is_followup = task.payload["is_followup"]
       seq = task.payload["sequence_number"]
 
+      subject = task.result["subject"].presence
+      body = task.result["body"].presence
+      raise ArgumentError, "Missing subject or body in task result" if subject.nil? || body.nil?
+
       draft = Draft.new(
         contact: contact,
-        subject: task.result["subject"],
-        body: task.result["body"],
+        subject: subject,
+        body: body,
         status: :draft,
         sequence_number: seq || (is_followup ? nil : 1)
       )
 
       if is_followup
-        draft.email_thread = contact.email_threads.order(:created_at).first
+        thread = contact.email_threads.order(:created_at).first
+        draft.email_thread = thread if thread
       end
 
       draft.save!

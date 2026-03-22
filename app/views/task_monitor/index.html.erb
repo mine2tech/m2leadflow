@@ -1,7 +1,14 @@
+<% content_for(:actions) do %>
+  <%= link_to new_task_monitor_path, class: "btn-primary" do %>
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+    New Task
+  <% end %>
+<% end %>
 <%= render "shared/page_header",
   title: "Task Monitor",
   subtitle: "Developer tool — monitor background task execution",
-  breadcrumbs: [["Task Monitor", nil]] %>
+  breadcrumbs: [["Task Monitor", nil]],
+  actions: content_for(:actions) %>
 
 <%# Status filter tabs %>
 <div class="flex items-center gap-1 mb-5 bg-slate-100 rounded-lg p-1 w-fit">
@@ -12,7 +19,7 @@
 </div>
 
 <% if @tasks.any? %>
-  <div class="card overflow-hidden">
+  <div class="card overflow-hidden overflow-x-auto">
     <table class="data-table">
       <thead>
         <tr>

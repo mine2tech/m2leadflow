@@ -3,7 +3,7 @@
   breadcrumbs: [["Followups", nil]] %>
 
 <%# Stats bar %>
-<div class="grid grid-cols-3 gap-4 mb-6">
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
   <div class="stat-card">
     <div class="flex items-center gap-2">
       <span class="w-2 h-2 rounded-full bg-amber-400"></span>
@@ -39,7 +39,7 @@
 </div>
 
 <% if @followups.any? %>
-  <div class="card overflow-hidden">
+  <div class="card overflow-hidden overflow-x-auto">
     <table class="data-table">
       <thead>
         <tr>

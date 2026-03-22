@@ -1,12 +1,20 @@
+<% content_for(:actions) do %>
+  <%= link_to new_draft_path, class: "btn-primary" do %>
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+    New Email
+  <% end %>
+<% end %>
 <%= render "shared/page_header",
   title: "Drafts",
-  breadcrumbs: [["Drafts", nil]] %>
+  breadcrumbs: [["Drafts", nil]],
+  actions: content_for(:actions) %>
 
 <%# Status filter tabs %>
 <div class="flex items-center gap-1 mb-6 bg-slate-100 rounded-lg p-1 w-fit">
   <% tabs = [["All", drafts_path, params[:status].blank?],
              ["Draft", drafts_path(status: :draft), params[:status] == "draft"],
              ["Approved", drafts_path(status: :approved), params[:status] == "approved"],
+             ["Scheduled", drafts_path(status: :scheduled), params[:status] == "scheduled"],
              ["Sent", drafts_path(status: :sent), params[:status] == "sent"]] %>
   <% tabs.each do |label, path, active| %>
     <%= link_to label, path, class: "px-3 py-1.5 text-sm font-medium rounded-md transition-colors #{active ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'}" %>
@@ -29,7 +37,15 @@
               <span class="text-xs text-slate-400">&middot;</span>
               <span class="text-xs text-slate-500"><%= draft.contact.company.name %></span>
             </div>
-            <%= render "shared/status_badge", status: draft.status %>
+            <div class="flex items-center gap-2">
+              <% if draft.attachments.any? %>
+                <span class="text-xs text-slate-400 flex items-center gap-1">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                  <%= draft.attachments.count %>
+                </span>
+              <% end %>
+              <%= render "shared/status_badge", status: draft.status %>
+            </div>
           </div>
           <%= link_to draft, class: "block group/link" do %>
             <p class="text-sm font-medium text-slate-800 group-hover/link:text-indigo-600 transition-colors"><%= draft.subject || "(no subject)" %></p>
@@ -37,11 +53,13 @@
           <% end %>
         </div>
         <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 pt-1">
-          <% unless draft.sent? %>
-            <% if draft.draft? %>
-              <%= button_to "Approve", approve_draft_path(draft), method: :post, class: "btn-primary btn-sm" %>
-            <% end %>
+          <% if draft.draft? %>
+            <%= button_to "Approve", approve_draft_path(draft), method: :post, class: "btn-primary btn-sm" %>
             <%= link_to "Edit", edit_draft_path(draft), class: "btn-ghost btn-sm" %>
+          <% elsif draft.approved? && current_user.can_send_email? %>
+            <%= button_to "Send Now", send_email_draft_path(draft), method: :post,
+              class: "btn-sm inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-medium transition-colors",
+              data: { turbo_confirm: "Send this email?" } %>
           <% end %>
           <%= link_to "View", draft, class: "btn-ghost btn-sm" %>
         </div>
@@ -52,7 +70,9 @@
   <div class="card">
     <%= render "shared/empty_state",
       title: "No drafts found",
-      description: "Drafts are created automatically when contacts are added to companies.",
-      icon: '<svg class="empty-state-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>' %>
+      description: "Drafts are created automatically when contacts are added, or compose a new email.",
+      icon: '<svg class="empty-state-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>',
+      cta_text: "New Email",
+      cta_path: new_draft_path %>
   </div>
 <% end %>

@@ -1,0 +1,76 @@
+<%= render "shared/page_header",
+  breadcrumbs: [["Drafts", drafts_path], ["New Email", nil]],
+  title: "Compose Email" %>
+
+<div class="card max-w-3xl">
+  <div class="card-body">
+    <%= form_with(model: @draft, class: "space-y-4") do |f| %>
+      <% if @draft.errors.any? %>
+        <div class="p-3 rounded-lg bg-red-50 border border-red-200">
+          <ul class="text-sm text-red-600 list-disc list-inside">
+            <% @draft.errors.full_messages.each do |msg| %>
+              <li><%= msg %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <% if @draft.contact_id.present? %>
+        <%= f.hidden_field :contact_id %>
+        <div>
+          <label class="form-label">To</label>
+          <% contact = Contact.find(@draft.contact_id) %>
+          <p class="form-input bg-slate-50 text-slate-700"><%= contact.name || contact.email %> &lt;<%= contact.email %>&gt;</p>
+        </div>
+      <% else %>
+        <div data-controller="compose-to">
+          <label class="form-label">To</label>
+          <div class="space-y-2">
+            <select name="draft[contact_id]" class="form-input w-full" data-compose-to-target="select" data-action="compose-to#toggleNew">
+              <option value="">Select existing contact or type new email below</option>
+              <% @contacts.each do |c| %>
+                <option value="<%= c.id %>"><%= c.name || c.email %> &lt;<%= c.email %>&gt; — <%= c.company.name %></option>
+              <% end %>
+              <option value="new">+ New email address</option>
+            </select>
+            <div data-compose-to-target="newFields" class="hidden space-y-2">
+              <input type="email" name="email_address" placeholder="recipient@example.com" class="form-input w-full">
+              <div class="grid grid-cols-2 gap-2">
+                <input type="text" name="contact_name" placeholder="Contact name (optional)" class="form-input">
+                <select name="company_id" class="form-input">
+                  <option value="">Auto-create company from domain</option>
+                  <% Company.order(:name).each do |company| %>
+                    <option value="<%= company.id %>"><%= company.name %></option>
+                  <% end %>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+
+      <%= f.hidden_field :email_thread_id if @draft.email_thread_id.present? %>
+
+      <div>
+        <label class="form-label">Subject</label>
+        <%= f.text_field :subject, class: "form-input w-full", required: true %>
+      </div>
+
+      <div>
+        <label class="form-label">Body</label>
+        <%= f.text_area :body, class: "form-input font-mono w-full", rows: 12, required: true %>
+      </div>
+
+      <div>
+        <label class="form-label">Attachments</label>
+        <%= f.file_field :attachments, multiple: true, class: "form-input text-sm w-full file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" %>
+        <p class="text-xs text-slate-400 mt-1">Optional: Attach PDFs, PPTs, or other files.</p>
+      </div>
+
+      <div class="flex gap-3 pt-4 border-t border-slate-100">
+        <%= f.submit "Save as Draft", class: "btn-primary cursor-pointer" %>
+        <%= link_to "Cancel", drafts_path, class: "btn-secondary" %>
+      </div>
+    <% end %>
+  </div>
+</div>

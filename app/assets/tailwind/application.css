@@ -30,7 +30,7 @@
 @layer components {
   /* Layout */
   .page-container {
-    @apply px-8 py-6 max-w-7xl mx-auto;
+    @apply px-4 py-4 sm:px-6 sm:py-5 lg:px-8 lg:py-6 max-w-7xl mx-auto;
   }
 
   /* Cards */
@@ -169,6 +169,49 @@
 
 .animate-fade-out {
   animation: fade-out 0.3s ease-in forwards;
+}
+
+/* Sidebar responsive — plain media query for max browser compatibility */
+.sidebar-wrapper {
+  display: none;
+}
+@media (min-width: 1024px) {
+  .sidebar-wrapper {
+    display: block;
+  }
+}
+.sidebar-wrapper.is-open {
+  display: block;
+}
+
+/* Mobile header */
+.mobile-header {
+  display: flex;
+}
+@media (min-width: 1024px) {
+  .mobile-header {
+    display: none;
+  }
+}
+
+/* Mobile sidebar overlay */
+.sidebar-overlay {
+  display: none;
+}
+.sidebar-overlay.is-open {
+  display: block;
+}
+
+/* Main content offset */
+.main-content {
+  padding-top: 3.5rem;
+  padding-left: 0;
+}
+@media (min-width: 1024px) {
+  .main-content {
+    padding-top: 0;
+    padding-left: 15rem;
+  }
 }
 
 /* Turbo progress bar */

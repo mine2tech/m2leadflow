@@ -1,4 +1,6 @@
 class SettingsController < ApplicationController
+  before_action :require_admin!
+
   def index
     @gmail_accounts = GmailAccount.all
     @apollo_accounts = ApolloAccount.all
@@ -6,6 +8,8 @@ class SettingsController < ApplicationController
     @max_followups = Setting.max_followups
     @auto_send_followups = Setting.auto_send_followups?
     @followup_use_ai = Setting.followup_use_ai?
+    @slack_webhook_url = Setting.slack_webhook_url
+    @reply_reminder_hours = Setting.reply_reminder_hours
   end
 
   def update_followup_defaults
@@ -14,5 +18,11 @@ class SettingsController < ApplicationController
     Setting.set("auto_send_followups", params[:auto_send_followups] || "false")
     Setting.set("followup_use_ai", params[:followup_use_ai] || "true")
     redirect_to settings_path, notice: "Followup settings updated."
+  end
+
+  def update_slack_settings
+    Setting.set("slack_webhook_url", params[:slack_webhook_url])
+    Setting.set("reply_reminder_hours", params[:reply_reminder_hours])
+    redirect_to settings_path, notice: "Slack settings updated."
   end
 end

@@ -54,8 +54,17 @@
       <% end %>
     <% end %>
 
-    <% if contact.last_outbound_at && !contact.has_reply? %>
-      <button class="btn-secondary w-full mb-2">Write Followup</button>
+    <%= link_to new_draft_path(contact_id: contact.id), class: "btn-secondary w-full mb-2 text-center" do %>
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+      New Email
+    <% end %>
+
+    <% thread = contact.email_threads.joins(:messages).first %>
+    <% if thread %>
+      <%= link_to reply_contact_path(contact, thread_id: thread.id), class: "btn-secondary w-full mb-2 text-center" do %>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
+        Reply
+      <% end %>
     <% end %>
 
     <%= link_to new_meeting_path(contact_id: contact.id), class: "btn-ghost w-full text-center" do %>

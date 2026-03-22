@@ -1,0 +1,22 @@
+<%# Activity & Comments Panel - right sidebar for contact/company views %>
+<div class="card h-full flex flex-col">
+  <div class="card-header">
+    <h3 class="text-sm font-semibold text-slate-900">Activity</h3>
+  </div>
+
+  <%# Activity Feed %>
+  <div id="activity-feed" class="flex-1 overflow-y-auto px-4 py-3 space-y-3" style="max-height: 60vh;">
+    <% if activities.any? %>
+      <% activities.each do |activity| %>
+        <%= render "shared/activity_item", activity: activity %>
+      <% end %>
+    <% else %>
+      <p class="text-sm text-slate-400 text-center py-6">No activity yet</p>
+    <% end %>
+  </div>
+
+  <%# Comment Form %>
+  <div class="border-t border-slate-100 px-4 py-3">
+    <%= render "shared/comment_form", commentable: commentable %>
+  </div>
+</div>

@@ -2,7 +2,7 @@ class GmailPollingService
   def self.call
     GmailAccount.active.find_each do |account|
       new(account).poll
-    rescue => e
+    rescue StandardError => e
       Rails.logger.error("Gmail polling failed for #{account.email}: #{e.message}")
     end
   end
@@ -25,7 +25,7 @@ class GmailPollingService
 
     response.messages.each do |msg_ref|
       process_message(msg_ref.id)
-    rescue => e
+    rescue StandardError => e
       Rails.logger.error("Failed to process message #{msg_ref.id}: #{e.message}")
     end
   end
@@ -37,9 +37,9 @@ class GmailPollingService
 
     msg = @service.get_user_message("me", message_id, format: "full")
 
-    headers = msg.payload.headers.index_by(&:name)
+    headers = (msg.payload.headers || []).index_by(&:name)
     in_reply_to = headers["In-Reply-To"]&.value
-    references = headers["References"]&.value&.split(/\s+/) || []
+    references = (headers["References"]&.value || "").split(/\s+/)
     subject = headers["Subject"]&.value
 
     all_refs = ([in_reply_to] + references).compact.uniq
@@ -48,7 +48,7 @@ class GmailPollingService
 
     thread = outbound_message.email_thread
 
-    thread.messages.create!(
+    inbound_message = thread.messages.create!(
       direction: :inbound,
       subject: subject,
       body: extract_body(msg),
@@ -56,6 +56,11 @@ class GmailPollingService
     )
 
     thread.update!(external_thread_id: msg.thread_id) if thread.external_thread_id.blank?
+
+    # Track activity and notify
+    contact = thread.contact
+    ActivityTracker.track(contact, action: "reply_received", metadata: { subject: subject })
+    SlackNotificationService.reply_received(inbound_message) if Setting.slack_webhook_url.present?
 
     Rails.logger.info("Matched inbound reply to thread #{thread.id}")
   end
@@ -98,7 +103,7 @@ class GmailPollingService
     )
 
     @service.authorization = client
-  rescue => e
+  rescue StandardError => e
     @account.update!(status: :expired)
     raise e
   end

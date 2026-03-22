@@ -5,6 +5,8 @@ class Contact < ApplicationRecord
   has_many :drafts, dependent: :destroy
   has_many :followups, dependent: :destroy
   has_many :meetings, dependent: :destroy
+  has_many :comments, as: :commentable, dependent: :destroy
+  has_many :activities, as: :trackable, dependent: :destroy
 
   validates :email, presence: true, uniqueness: true,
             format: { with: URI::MailTo::EMAIL_REGEXP }

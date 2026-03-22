@@ -43,6 +43,38 @@
     </div>
   </div>
 
+  <%# Slack Integration %>
+  <div class="card">
+    <div class="card-header flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
+        <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
+      </div>
+      <div>
+        <h2 class="text-sm font-semibold text-slate-900">Slack Integration</h2>
+        <p class="text-xs text-slate-500">Get notified about replies and activity on Slack.</p>
+      </div>
+    </div>
+    <div class="card-body">
+      <%= form_with url: settings_slack_path, method: :patch, class: "space-y-4" do |f| %>
+        <div>
+          <label class="form-label">Slack Webhook URL</label>
+          <%= f.url_field :slack_webhook_url, value: @slack_webhook_url, class: "form-input w-full", placeholder: "https://hooks.slack.com/services/..." %>
+          <p class="text-xs text-slate-400 mt-1">Create an incoming webhook in your Slack workspace settings.</p>
+        </div>
+
+        <div>
+          <label class="form-label">Reply reminder (hours)</label>
+          <%= f.number_field :reply_reminder_hours, value: @reply_reminder_hours, min: 0, max: 168, class: "form-input w-32" %>
+          <p class="text-xs text-slate-400 mt-1">Send a Slack reminder if a reply hasn't been responded to after this many hours. Set to 0 to disable.</p>
+        </div>
+
+        <div class="pt-2 border-t border-slate-100">
+          <%= f.submit "Save Slack Settings", class: "btn-primary cursor-pointer" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
   <%# Gmail Accounts %>
   <div class="card">
     <div class="card-header flex items-center justify-between">
