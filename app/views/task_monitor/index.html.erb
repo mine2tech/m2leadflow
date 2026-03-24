@@ -1,0 +1,82 @@
+<% content_for(:actions) do %>
+  <%= link_to new_task_monitor_path, class: "btn-primary" do %>
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+    New Task
+  <% end %>
+<% end %>
+<%= render "shared/page_header",
+  title: "Task Monitor",
+  subtitle: "Developer tool — monitor background task execution",
+  breadcrumbs: [["Task Monitor", nil]],
+  actions: content_for(:actions) %>
+
+<%# Status filter tabs %>
+<div class="flex items-center gap-1 mb-5 bg-slate-100 rounded-lg p-1 w-fit">
+  <%= link_to "All", task_monitor_index_path, class: "px-3 py-1.5 text-sm font-medium rounded-md transition-colors #{params[:status].blank? ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'}" %>
+  <% Task.statuses.keys.each do |s| %>
+    <%= link_to s.humanize, task_monitor_index_path(status: s), class: "px-3 py-1.5 text-sm font-medium rounded-md transition-colors #{params[:status] == s ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'}" %>
+  <% end %>
+</div>
+
+<% if @tasks.any? %>
+  <div class="card overflow-hidden overflow-x-auto">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th scope="col">ID</th>
+          <th scope="col">Type</th>
+          <th scope="col">Status</th>
+          <th scope="col">Attempts</th>
+          <th scope="col">Payload</th>
+          <th scope="col">Error</th>
+          <th scope="col">Created</th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @tasks.each do |task| %>
+          <% row_bg = case task.status
+            when "completed" then "bg-emerald-50/30"
+            when "failed" then "bg-rose-50/30"
+            when "in_progress" then "bg-sky-50/30"
+            else ""
+          end %>
+          <tr class="<%= row_bg %>">
+            <td class="text-sm text-slate-500 font-mono"><%= task.id %></td>
+            <td class="text-sm font-medium text-slate-900"><%= task.task_type %></td>
+            <td><%= render "shared/status_badge", status: task.status %></td>
+            <td class="text-sm text-slate-600"><%= task.attempts %>/<%= task.max_attempts %></td>
+            <td class="text-xs text-slate-500 font-mono max-w-xs truncate" title="<%= task.payload.to_json %>">
+              <%= task.payload.to_json.truncate(60) %>
+            </td>
+            <td class="text-xs max-w-xs">
+              <% if task.error.present? %>
+                <div data-controller="collapse">
+                  <button data-action="collapse#toggle" class="text-rose-600 hover:text-rose-700 truncate block max-w-full text-left transition-colors">
+                    <%= task.error.truncate(60) %>
+                  </button>
+                  <div data-collapse-target="content" class="overflow-hidden transition-all duration-300" style="max-height: 0px; opacity: 0;">
+                    <pre class="mt-2 p-2 bg-rose-50 rounded-lg text-xs text-rose-800 whitespace-pre-wrap"><%= task.error %></pre>
+                  </div>
+                </div>
+              <% end %>
+            </td>
+            <td class="text-sm text-slate-500"><%= task.created_at.strftime("%b %d %H:%M") %></td>
+            <td class="text-right">
+              <% if task.failed? %>
+                <%= button_to "Retry", retry_task_task_monitor_path(task), method: :post, class: "btn-ghost btn-sm text-indigo-600 hover:text-indigo-700" %>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <div class="card">
+    <%= render "shared/empty_state",
+      title: "No tasks",
+      description: "Tasks are created automatically when companies and contacts are added.",
+      icon: '<svg class="empty-state-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/></svg>' %>
+  </div>
+<% end %>

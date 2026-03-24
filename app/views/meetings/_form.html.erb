@@ -1,0 +1,106 @@
+<%= form_with(model: meeting, class: "space-y-4") do |f| %>
+  <% if meeting.errors.any? %>
+    <div class="bg-rose-50 border border-rose-200 text-rose-800 px-4 py-3 rounded-lg text-sm">
+      <ul class="list-disc list-inside">
+        <% meeting.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <label class="form-label">Contact</label>
+    <%= f.collection_select :contact_id, @contacts, :id, ->(c) { "#{c.name || c.email} (#{c.company.name})" }, { prompt: "Select contact" }, class: "form-input" %>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <label class="form-label">Date & Time</label>
+      <%= f.datetime_local_field :scheduled_at, class: "form-input" %>
+    </div>
+    <div>
+      <label class="form-label">Duration</label>
+      <%= f.select :duration_minutes,
+        [[" 15 min", 15], ["30 min", 30], ["45 min", 45], ["1 hour", 60], ["1.5 hours", 90]],
+        {}, class: "form-input" %>
+    </div>
+  </div>
+
+  <div>
+    <label class="form-label">Agenda</label>
+    <%= f.text_area :agenda, class: "form-input", rows: 3, placeholder: "Meeting agenda / description..." %>
+  </div>
+
+  <div data-controller="invitees">
+    <label class="form-label">Invitees</label>
+    <div data-invitees-target="list" class="space-y-2">
+      <% (meeting.invitees.presence || [""]).each do |email| %>
+        <div class="flex gap-2" data-invitees-target="row">
+          <input type="email" name="meeting[invitees][]" value="<%= email %>" class="form-input flex-1" placeholder="email@example.com">
+          <button type="button" data-action="invitees#remove" class="btn-ghost btn-sm text-rose-500 hover:text-rose-700">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+      <% end %>
+    </div>
+    <button type="button" data-action="invitees#add" class="mt-2 text-sm text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+      Add invitee
+    </button>
+  </div>
+
+  <div>
+    <label class="form-label">Location</label>
+    <%= f.text_field :location, class: "form-input", placeholder: "Office address or virtual..." %>
+  </div>
+
+  <div>
+    <label class="form-label">Meeting Link</label>
+    <div class="relative">
+      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+      </div>
+      <% if meeting.synced_to_calendar? %>
+        <%= f.url_field :meeting_link, class: "form-input pl-9 bg-slate-50", readonly: true %>
+        <p class="text-xs text-slate-400 mt-1">Auto-generated Google Meet link. Edit in Google Calendar.</p>
+      <% else %>
+        <%= f.url_field :meeting_link, class: "form-input pl-9", placeholder: "https://meet.google.com/..." %>
+      <% end %>
+    </div>
+  </div>
+
+  <div>
+    <label class="form-label">Notes</label>
+    <%= f.text_area :notes, class: "form-input", rows: 2, placeholder: "Internal notes..." %>
+  </div>
+
+  <div>
+    <label class="form-label">Status</label>
+    <%= f.select :status, Meeting.statuses.keys.map { |s| [s.humanize, s] }, {}, class: "form-input" %>
+  </div>
+
+  <% if @calendar_connected && !meeting.synced_to_calendar? %>
+    <div class="flex items-center gap-2 p-3 bg-sky-50 border border-sky-200 rounded-lg">
+      <input type="checkbox" name="create_calendar_event" value="1" id="create_calendar_event"
+        class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" checked>
+      <label for="create_calendar_event" class="text-sm text-slate-700">
+        Create Google Calendar event & send invites
+      </label>
+    </div>
+  <% end %>
+
+  <% if meeting.synced_to_calendar? %>
+    <div class="flex items-center gap-2 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+      <svg class="w-4 h-4 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+      </svg>
+      <span class="text-sm text-emerald-700">Synced to Google Calendar. Changes will update the calendar event.</span>
+    </div>
+  <% end %>
+
+  <div class="flex gap-3 pt-2 border-t border-slate-100">
+    <%= f.submit class: "btn-primary cursor-pointer" %>
+    <%= link_to "Cancel", meetings_path, class: "btn-secondary" %>
+  </div>
+<% end %>

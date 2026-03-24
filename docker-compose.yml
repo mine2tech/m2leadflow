@@ -1,0 +1,52 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-changeme}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./tmp/dump:/dump
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.deploy
+    command: >
+      bash -c "bundle exec rails db:create 2>/dev/null;
+               bundle exec rails db:migrate 2>/dev/null;
+               bundle exec puma -C config/puma.rb"
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env.production
+    volumes:
+      - app_storage:/app/storage
+
+  jobs:
+    build:
+      context: .
+      dockerfile: Dockerfile.deploy
+    command: >
+      bash -c "sleep 10; bundle exec ruby bin/jobs"
+    depends_on:
+      db:
+        condition: service_healthy
+      web:
+        condition: service_started
+    env_file: .env.production
+    volumes:
+      - app_storage:/app/storage
+
+volumes:
+  pgdata:
+  app_storage:

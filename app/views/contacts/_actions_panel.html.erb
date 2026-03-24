@@ -1,0 +1,149 @@
+<%# Contact identity %>
+<div class="mb-5">
+  <div class="flex items-start gap-3">
+    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center flex-shrink-0">
+      <span class="text-sm font-bold text-white"><%= initials_for(contact.name) %></span>
+    </div>
+    <div class="flex-1 min-w-0">
+      <div class="flex items-center justify-between">
+        <h1 class="text-lg font-semibold text-slate-900 truncate"><%= contact.name || contact.email %></h1>
+        <% stage = contact.pipeline_stage %>
+        <%= render "shared/status_badge", status: stage %>
+      </div>
+      <% if contact.role.present? %>
+        <p class="text-sm text-slate-500 mt-0.5"><%= contact.role %></p>
+      <% end %>
+      <p class="text-xs text-slate-400 mt-0.5">
+        <%= link_to contact.company.name, contact.company, class: "text-indigo-600 hover:text-indigo-700 transition-colors" %>
+      </p>
+    </div>
+  </div>
+</div>
+
+<%# Contact Info section %>
+<div class="card mb-4">
+  <div class="card-body py-3 space-y-2">
+    <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-2">Contact Info</p>
+    <% if contact.email.present? %>
+      <div class="flex items-center gap-2">
+        <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+        <span class="text-sm text-slate-700 break-all"><%= contact.email %></span>
+      </div>
+    <% end %>
+    <% if contact.phone.present? %>
+      <div class="flex items-center gap-2">
+        <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+        <span class="text-sm text-slate-700"><%= contact.phone %></span>
+      </div>
+    <% end %>
+    <% if contact.role.present? %>
+      <div class="flex items-center gap-2">
+        <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+        <span class="text-sm text-slate-700"><%= contact.role %></span>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<%# Actions section %>
+<div class="card mb-4">
+  <div class="card-body py-3">
+    <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-3">Actions</p>
+    <% pending_draft = drafts.find { |d| d.draft? || d.reviewed? } %>
+    <% if pending_draft %>
+      <% if pending_draft.draft? %>
+        <%= button_to "Review Draft", approve_draft_path(pending_draft), method: :post,
+          class: "btn-primary w-full mb-2",
+          data: { turbo_submits_with: "Reviewing…" } %>
+      <% elsif pending_draft.reviewed? %>
+        <%= button_to "Back to Draft", unapprove_draft_path(pending_draft), method: :post,
+          class: "btn-ghost w-full mb-2" %>
+        <% if current_user.can_send_email? %>
+          <% if contact.email.present? %>
+            <%= button_to "Send Email", send_email_draft_path(pending_draft), method: :post,
+              class: "btn-primary w-full mb-2",
+              data: { turbo_confirm: "Send this email to #{contact.email}?", turbo_submits_with: "Sending…" } %>
+          <% else %>
+            <p class="text-xs text-rose-500 mb-2 text-center">Add an email address to send.</p>
+          <% end %>
+          <div class="relative mb-2" data-controller="send-later">
+            <button type="button" data-action="send-later#toggle" class="btn-secondary w-full">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              Send Later
+            </button>
+            <div data-send-later-target="picker" class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg p-3 z-10">
+              <%= form_with url: send_later_draft_path(pending_draft), method: :post, class: "space-y-2" do |f| %>
+                <div>
+                  <label class="text-xs text-slate-500 block mb-1">Schedule for</label>
+                  <input type="datetime-local" name="scheduled_at" class="form-input text-xs py-1.5 w-full" min="<%= Time.current.strftime('%Y-%m-%dT%H:%M') %>" required>
+                </div>
+                <button type="submit" class="btn-primary btn-sm w-full">Schedule</button>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <%= link_to new_draft_path(contact_id: contact.id), class: "btn-secondary w-full mb-2 text-center" do %>
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+      New Email
+    <% end %>
+
+    <% thread = contact.email_threads.joins(:messages).first %>
+    <% if thread %>
+      <%= link_to reply_contact_path(contact, thread_id: thread.id), class: "btn-secondary w-full mb-2 text-center" do %>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
+        Reply
+      <% end %>
+    <% end %>
+
+    <%= link_to new_meeting_path(contact_id: contact.id), class: "btn-ghost w-full text-center" do %>
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+      Schedule Meeting
+    <% end %>
+  </div>
+</div>
+
+<%# Followups section %>
+<% if followups.any? %>
+  <div class="card mb-4">
+    <div class="card-body py-3">
+      <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-2">Followups</p>
+      <div class="space-y-1">
+        <% followups.each do |fu| %>
+          <div class="flex items-center justify-between py-1.5">
+            <span class="text-sm text-slate-700">Seq #<%= fu.sequence_number %></span>
+            <span class="flex items-center gap-2">
+              <%= render "shared/status_badge", status: fu.status %>
+              <% if fu.pending? %>
+                <%= button_to "Skip", skip_followup_path(fu), method: :post, class: "text-xs text-rose-500 hover:text-rose-700 bg-transparent border-0 p-0 cursor-pointer transition-colors" %>
+              <% end %>
+            </span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<%# Meetings section %>
+<% if meetings.any? %>
+  <div class="card mb-4">
+    <div class="card-body py-3">
+      <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-2">Meetings</p>
+      <div class="space-y-1">
+        <% meetings.each do |meeting| %>
+          <div class="flex items-center justify-between py-1.5">
+            <span class="text-sm text-slate-700"><%= meeting.scheduled_at&.strftime("%b %-d, %l:%M %p") || "—" %></span>
+            <%= render "shared/status_badge", status: meeting.status %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<div class="pt-2 border-t border-slate-100">
+  <%= link_to "Edit Contact", edit_contact_path(contact), class: "text-xs text-slate-400 hover:text-slate-600 transition-colors" %>
+</div>

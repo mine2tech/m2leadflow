@@ -1,0 +1,87 @@
+<nav class="h-full w-60 bg-slate-900 flex flex-col">
+  <%# Brand %>
+  <div class="px-5 py-5 border-b border-slate-700/50">
+    <%= link_to root_path, class: "flex items-center gap-3 group" do %>
+      <div class="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center shadow-sm">
+        <svg class="w-4.5 h-4.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+        </svg>
+      </div>
+      <div>
+        <span class="text-sm font-bold text-white tracking-tight">LeadFlow</span>
+        <span class="block text-[10px] text-slate-500 font-medium">Outbound Engine</span>
+      </div>
+    <% end %>
+  </div>
+
+  <%# Navigation %>
+  <div class="flex-1 px-3 py-4 overflow-y-auto space-y-6">
+    <%# Pipeline section %>
+    <div>
+      <p class="px-3 mb-2 text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Pipeline</p>
+      <div class="space-y-0.5">
+        <%= sidebar_link("Dashboard", root_path, '<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>', controllers: ["dashboard"]) %>
+        <%= sidebar_link("Companies", companies_path, '<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>', controllers: ["companies"]) %>
+        <%= sidebar_link("Drafts", drafts_path, '<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>', controllers: ["drafts"]) %>
+        <%= sidebar_link("Followups", followups_path, '<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>', controllers: ["followups"]) %>
+        <%= sidebar_link("Meetings", meetings_path, '<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>', controllers: ["meetings"]) %>
+        <%= sidebar_link("Performance", performance_path, '<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>', controllers: ["performance"]) %>
+      </div>
+    </div>
+
+    <%# System section %>
+    <div>
+      <p class="px-3 mb-2 text-[10px] font-semibold text-slate-500 uppercase tracking-widest">System</p>
+      <div class="space-y-0.5">
+        <% if current_user&.admin? %>
+          <%= sidebar_link("Settings", settings_path, '<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>', controllers: ["settings"]) %>
+          <%= sidebar_link("Users", users_path, '<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>', controllers: ["users"]) %>
+        <% end %>
+        <%= sidebar_link("Task Monitor", task_monitor_index_path, '<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/></svg>', controllers: ["task_monitor"]) %>
+      </div>
+    </div>
+
+    <%# Contextual section %>
+    <% sidebar_company = defined?(@company) ? @company : (defined?(@contact) ? @contact&.company : nil) %>
+    <% sidebar_contact = defined?(@contact) ? @contact : nil %>
+    <% if sidebar_company.present? %>
+      <div class="border-t border-slate-700/50 pt-4">
+        <p class="px-3 mb-2 text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Context</p>
+        <%= link_to sidebar_company.name, sidebar_company, class: "flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm text-slate-300 hover:bg-slate-800/50 hover:text-slate-200 font-medium transition-colors" %>
+        <% if sidebar_contact.present? && sidebar_contact.persisted? %>
+          <%= link_to (sidebar_contact.name || sidebar_contact.email), sidebar_contact, class: "flex items-center gap-2 pl-8 pr-3 py-1.5 rounded-lg text-sm text-slate-400 hover:bg-slate-800/50 hover:text-slate-300 transition-colors" %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <%# User info & sign out %>
+  <div class="px-4 py-3 border-t border-slate-700/50">
+    <% if current_user %>
+      <div class="flex items-center justify-between mb-3">
+        <div class="min-w-0">
+          <p class="text-sm font-medium text-white truncate"><%= current_user.name %></p>
+          <p class="text-[10px] text-slate-500 truncate"><%= current_user.email %></p>
+        </div>
+        <span class="badge badge-<%= current_user.admin? ? 'primary' : current_user.editor? ? 'info' : 'neutral' %> text-[10px] shrink-0">
+          <%= current_user.role.humanize %>
+        </span>
+      </div>
+      <%= button_to "Sign Out", destroy_user_session_path, method: :delete, class: "w-full text-center text-xs text-slate-400 hover:text-white py-1.5 rounded-lg hover:bg-slate-800/50 transition-colors" %>
+    <% end %>
+  </div>
+
+  <%# Quick stats footer %>
+  <div class="px-4 py-4 border-t border-slate-700/50">
+    <div class="grid grid-cols-2 gap-3">
+      <div class="text-center">
+        <p class="text-lg font-bold text-white"><%= Company.count %></p>
+        <p class="text-[10px] text-slate-500 uppercase tracking-wide">Companies</p>
+      </div>
+      <div class="text-center">
+        <p class="text-lg font-bold text-white"><%= Draft.where(status: :draft).count %></p>
+        <p class="text-[10px] text-slate-500 uppercase tracking-wide">To Review</p>
+      </div>
+    </div>
+  </div>
+</nav>

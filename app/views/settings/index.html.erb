@@ -1,0 +1,176 @@
+<%= render "shared/page_header",
+  title: "Settings",
+  breadcrumbs: [["Settings", nil]] %>
+
+<div class="space-y-6 max-w-4xl mx-auto">
+  <%# Followup Settings %>
+  <div class="card">
+    <div class="card-header flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center flex-shrink-0">
+        <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+      </div>
+      <div>
+        <h2 class="text-sm font-semibold text-slate-900">Followup Defaults</h2>
+        <p class="text-xs text-slate-500">Configure automatic followup behavior.</p>
+      </div>
+    </div>
+    <div class="card-body">
+      <%= form_with url: settings_followup_defaults_path, method: :patch, class: "space-y-4" do |f| %>
+        <div>
+          <label class="form-label">Days before followup</label>
+          <%= f.number_field :followup_delay_days, value: @followup_delay_days, min: 1, max: 30, class: "form-input w-32" %>
+        </div>
+
+        <div>
+          <label class="form-label">Max followups per contact</label>
+          <%= f.number_field :max_followups, value: @max_followups, min: 1, max: 10, class: "form-input w-32" %>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <%= f.check_box :auto_send_followups, checked: @auto_send_followups, class: "rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" %>
+          <%= f.label :auto_send_followups, "Auto-send followups (without manual review)", class: "text-sm text-slate-700" %>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <%= f.check_box :followup_use_ai, checked: @followup_use_ai, class: "rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" %>
+          <%= f.label :followup_use_ai, "Use AI (Claude) to generate followup drafts", class: "text-sm text-slate-700" %>
+        </div>
+
+        <div class="pt-2 border-t border-slate-100">
+          <%= f.submit "Save Settings", class: "btn-primary cursor-pointer" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Slack Integration %>
+  <div class="card">
+    <div class="card-header flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
+        <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
+      </div>
+      <div>
+        <h2 class="text-sm font-semibold text-slate-900">Slack Integration</h2>
+        <p class="text-xs text-slate-500">Get notified about replies and activity on Slack.</p>
+      </div>
+    </div>
+    <div class="card-body">
+      <%= form_with url: settings_slack_path, method: :patch, class: "space-y-4" do |f| %>
+        <div>
+          <label class="form-label">Slack Webhook URL</label>
+          <%= f.url_field :slack_webhook_url, value: @slack_webhook_url, class: "form-input w-full", placeholder: "https://hooks.slack.com/services/..." %>
+          <p class="text-xs text-slate-400 mt-1">Create an incoming webhook in your Slack workspace settings.</p>
+        </div>
+
+        <div>
+          <label class="form-label">Reply reminder (hours)</label>
+          <%= f.number_field :reply_reminder_hours, value: @reply_reminder_hours, min: 0, max: 168, class: "form-input w-32" %>
+          <p class="text-xs text-slate-400 mt-1">Send a Slack reminder if a reply hasn't been responded to after this many hours. Set to 0 to disable.</p>
+        </div>
+
+        <div class="pt-2 border-t border-slate-100">
+          <%= f.submit "Save Slack Settings", class: "btn-primary cursor-pointer" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Google Calendar %>
+  <div class="card">
+    <div class="card-header flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-sky-100 flex items-center justify-center flex-shrink-0">
+          <svg class="w-4 h-4 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-sm font-semibold text-slate-900">Google Calendar</h2>
+          <p class="text-xs text-slate-500">Separate account for scheduling meetings & sending invites.</p>
+        </div>
+      </div>
+      <%= link_to "Connect Calendar", auth_calendar_path, class: "btn-primary btn-sm" %>
+    </div>
+    <div class="card-body">
+      <% if @calendar_account %>
+        <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-medium text-slate-900"><%= @calendar_account.email %></span>
+            <%= render "shared/status_badge", status: @calendar_account.status %>
+          </div>
+          <span class="text-xs text-slate-500">
+            Expires: <%= @calendar_account.token_expires_at&.strftime("%b %d, %Y %H:%M") || "—" %>
+          </span>
+        </div>
+      <% else %>
+        <p class="text-sm text-slate-500">No Calendar account connected. Connect one to create Google Calendar events from meetings.</p>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Gmail Accounts %>
+  <div class="card">
+    <div class="card-header flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0">
+          <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+        </div>
+        <div>
+          <h2 class="text-sm font-semibold text-slate-900">Gmail Accounts</h2>
+          <p class="text-xs text-slate-500">Connected accounts for sending emails and tracking replies.</p>
+        </div>
+      </div>
+      <%= link_to "Connect Account", auth_gmail_path, class: "btn-primary btn-sm" %>
+    </div>
+    <div class="card-body">
+      <% if @gmail_accounts.any? %>
+        <div class="space-y-2">
+          <% @gmail_accounts.each do |account| %>
+            <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+              <div class="flex items-center gap-2">
+                <span class="text-sm font-medium text-slate-900"><%= account.email %></span>
+                <%= render "shared/status_badge", status: account.status %>
+              </div>
+              <span class="text-xs text-slate-500">
+                Expires: <%= account.token_expires_at&.strftime("%b %d, %Y %H:%M") || "—" %>
+              </span>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="text-sm text-slate-500">No Gmail accounts connected. Connect one to enable reply tracking.</p>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Apollo Accounts %>
+  <div class="card">
+    <div class="card-header flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
+        <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      </div>
+      <div>
+        <h2 class="text-sm font-semibold text-slate-900">Apollo Accounts</h2>
+        <p class="text-xs text-slate-500">Accounts used for contact enrichment.</p>
+      </div>
+    </div>
+    <div class="card-body">
+      <% if @apollo_accounts.any? %>
+        <div class="space-y-2">
+          <% @apollo_accounts.each do |account| %>
+            <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+              <div class="flex items-center gap-2">
+                <span class="text-sm font-medium text-slate-900"><%= account.email %></span>
+                <%= render "shared/status_badge", status: account.status %>
+              </div>
+              <span class="text-sm text-slate-600"><%= account.credits_remaining %> credits</span>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="text-sm text-slate-500">No Apollo accounts configured. Add via API or Rails console.</p>
+      <% end %>
+    </div>
+  </div>
+</div>

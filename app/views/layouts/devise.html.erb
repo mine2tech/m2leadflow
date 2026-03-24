@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Sign In - M2Leadflow</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="application-name" content="M2Leadflow">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <link rel="icon" href="/icon.png" type="image/png">
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="bg-slate-50 min-h-screen antialiased">
+    <div class="min-h-screen flex items-center justify-center px-4 py-12">
+      <div class="w-full max-w-md">
+        <div class="text-center mb-8">
+          <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-slate-900 mb-4">
+            <span class="text-lg font-bold text-white">LF</span>
+          </div>
+          <h1 class="text-2xl font-bold text-slate-900">LeadFlow</h1>
+          <p class="text-sm text-slate-500 mt-1">Cold email outbound system</p>
+        </div>
+
+        <% if alert.present? %>
+          <div class="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
+            <%= alert %>
+          </div>
+        <% end %>
+        <% if notice.present? %>
+          <div class="mb-4 p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-sm text-emerald-700">
+            <%= notice %>
+          </div>
+        <% end %>
+
+        <div class="card">
+          <div class="card-body">
+            <%= yield %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

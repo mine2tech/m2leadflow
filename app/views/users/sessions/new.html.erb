@@ -1,0 +1,30 @@
+<h2 class="text-lg font-semibold text-slate-900 mb-6">Sign in to your account</h2>
+
+<%= form_for(resource, as: resource_name, url: session_path(resource_name), html: { class: "space-y-4" }) do |f| %>
+  <div>
+    <%= f.label :email, class: "form-label" %>
+    <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "form-input w-full", placeholder: "you@example.com" %>
+  </div>
+
+  <div>
+    <%= f.label :password, class: "form-label" %>
+    <%= f.password_field :password, autocomplete: "current-password", class: "form-input w-full", placeholder: "Enter your password" %>
+  </div>
+
+  <% if devise_mapping.rememberable? %>
+    <div class="flex items-center gap-2">
+      <%= f.check_box :remember_me, class: "rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" %>
+      <%= f.label :remember_me, class: "text-sm text-slate-600" %>
+    </div>
+  <% end %>
+
+  <div>
+    <%= f.submit "Sign in", class: "btn-primary w-full justify-center" %>
+  </div>
+<% end %>
+
+<% if devise_mapping.recoverable? && controller_name != 'passwords' %>
+  <p class="text-center text-sm text-slate-500 mt-4">
+    <%= link_to "Forgot your password?", new_password_path(resource_name), class: "text-indigo-600 hover:text-indigo-700" %>
+  </p>
+<% end %>

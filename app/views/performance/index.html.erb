@@ -1,0 +1,126 @@
+<%= render "shared/page_header",
+  title: "Performance",
+  breadcrumbs: [["Performance", nil]] %>
+
+<%# Period filter %>
+<div class="flex items-center gap-1 mb-6 bg-slate-100 rounded-lg p-1 w-fit">
+  <% [["Today", "day"], ["This Week", "week"], ["This Month", "month"], ["All Time", "all"]].each do |label, period| %>
+    <%= link_to label, performance_path(period: period),
+      class: "px-3 py-1.5 text-sm font-medium rounded-md transition-colors #{@period == period ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'}" %>
+  <% end %>
+</div>
+
+<%# Stat cards %>
+<div class="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
+  <div class="stat-card">
+    <p class="stat-value"><%= @emails_sent %></p>
+    <p class="stat-label">Emails Sent</p>
+  </div>
+  <div class="stat-card">
+    <p class="stat-value"><%= @replies_received %></p>
+    <p class="stat-label">Replies</p>
+  </div>
+  <div class="stat-card">
+    <p class="stat-value"><%= @reply_rate %>%</p>
+    <p class="stat-label">Reply Rate</p>
+  </div>
+  <div class="stat-card">
+    <p class="stat-value"><%= @meetings_booked %></p>
+    <p class="stat-label">Meetings</p>
+  </div>
+  <div class="stat-card">
+    <p class="stat-value"><%= @drafts_created %></p>
+    <p class="stat-label">Drafts Created</p>
+  </div>
+  <div class="stat-card">
+    <p class="stat-value"><%= @drafts_reviewed %></p>
+    <p class="stat-label">Drafts Reviewed</p>
+  </div>
+</div>
+
+<%# Reply classification breakdown %>
+<% if @classification_counts.any? %>
+  <div class="card mb-8">
+    <div class="card-header">
+      <h2 class="text-sm font-semibold text-slate-900">Reply Classifications</h2>
+    </div>
+    <div class="card-body">
+      <div class="flex flex-wrap gap-4">
+        <% cls_colors = { "interested" => "text-emerald-600", "not_interested" => "text-rose-600", "out_of_office" => "text-amber-600", "wrong_person" => "text-slate-500", "auto_reply" => "text-slate-400" } %>
+        <% cls_total = @classification_counts.values.sum.to_f %>
+        <% @classification_counts.each do |cls, count| %>
+          <div class="flex items-center gap-2">
+            <span class="text-lg font-bold <%= cls_colors[cls] || 'text-slate-600' %>"><%= count %></span>
+            <span class="text-sm text-slate-500"><%= cls.humanize %></span>
+            <span class="text-xs text-slate-400">(<%= (count / cls_total * 100).round(0) %>%)</span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<%# Daily breakdown table %>
+<div class="card mb-8">
+  <div class="card-header">
+    <h2 class="text-sm font-semibold text-slate-900">Daily Breakdown</h2>
+  </div>
+  <div class="card-body p-0">
+    <% if @daily_stats.any? { |d| d[:sent] > 0 || d[:replies] > 0 || d[:meetings] > 0 } %>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th class="text-right">Sent</th>
+            <th class="text-right">Replies</th>
+            <th class="text-right">Meetings</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @daily_stats.each do |day| %>
+            <% next if day[:sent] == 0 && day[:replies] == 0 && day[:meetings] == 0 %>
+            <tr>
+              <td class="text-sm text-slate-700"><%= day[:date].strftime("%a, %b %-d") %></td>
+              <td class="text-sm text-right text-slate-900 font-medium"><%= day[:sent] %></td>
+              <td class="text-sm text-right <%= day[:replies] > 0 ? 'text-emerald-600 font-medium' : 'text-slate-400' %>"><%= day[:replies] %></td>
+              <td class="text-sm text-right <%= day[:meetings] > 0 ? 'text-indigo-600 font-medium' : 'text-slate-400' %>"><%= day[:meetings] %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <div class="p-8 text-center text-sm text-slate-400">No activity in this period</div>
+    <% end %>
+  </div>
+</div>
+
+<%# Per-user breakdown %>
+<% if @user_stats.any? %>
+  <div class="card">
+    <div class="card-header">
+      <h2 class="text-sm font-semibold text-slate-900">Per User</h2>
+    </div>
+    <div class="card-body p-0">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Role</th>
+            <th class="text-right">Emails Sent</th>
+            <th class="text-right">Drafts Reviewed</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @user_stats.each do |stat| %>
+            <tr>
+              <td class="text-sm font-medium text-slate-900"><%= stat[:user].name %></td>
+              <td><span class="badge badge-<%= stat[:user].admin? ? 'primary' : 'info' %>"><%= stat[:user].role.humanize %></span></td>
+              <td class="text-sm text-right text-slate-700"><%= stat[:emails_sent] %></td>
+              <td class="text-sm text-right text-slate-700"><%= stat[:drafts_reviewed] %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+<% end %>

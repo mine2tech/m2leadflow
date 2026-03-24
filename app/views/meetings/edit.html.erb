@@ -1,0 +1,12 @@
+<%= render "shared/page_header",
+  breadcrumbs: [["Meetings", meetings_path], ["Edit Meeting", nil]],
+  title: "Edit Meeting" %>
+
+<div class="card max-w-3xl mx-auto">
+  <div class="card-header">
+    <h2 class="text-sm font-semibold text-slate-900">Edit Meeting</h2>
+  </div>
+  <div class="card-body">
+    <%= render "form", meeting: @meeting %>
+  </div>
+</div>

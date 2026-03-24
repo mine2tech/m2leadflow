@@ -1,0 +1,80 @@
+<%= render "shared/page_header",
+  breadcrumbs: [["Drafts", drafts_path], [@draft.contact.name || @draft.contact.email, contact_path(@draft.contact)], ["Draft", nil]],
+  title: "Draft" %>
+
+<div class="max-w-4xl mx-auto">
+  <div class="card">
+    <%# Header %>
+    <div class="card-header flex items-center justify-between">
+      <div>
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
+            <span class="text-xs font-bold text-slate-600"><%= initials_for(@draft.contact.name) %></span>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-slate-900">
+              To: <%= @draft.contact.name || "" %><% if @draft.contact.email.present? %> &lt;<%= @draft.contact.email %>&gt;<% end %>
+            </p>
+            <p class="text-xs text-slate-500">
+              <%= link_to @draft.contact.company.name, @draft.contact.company, class: "text-indigo-600 hover:text-indigo-700 transition-colors" %>
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <%= render "shared/status_badge", status: @draft.status %>
+        <% if @draft.draft? %>
+          <%= link_to "Edit", edit_draft_path(@draft), class: "btn-secondary btn-sm" %>
+          <%= button_to "Review", approve_draft_path(@draft), method: :post, class: "btn-primary btn-sm",
+                data: { turbo_submits_with: "Reviewing…" } %>
+        <% elsif @draft.reviewed? %>
+          <%= button_to "Back to Draft", unapprove_draft_path(@draft), method: :post, class: "btn-ghost btn-sm" %>
+          <%= link_to "Edit", edit_draft_path(@draft), class: "btn-secondary btn-sm" %>
+          <% if current_user.can_send_email? && @draft.contact.email.present? %>
+            <%= button_to "Send Now", send_email_draft_path(@draft), method: :post,
+              class: "btn-sm inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-medium transition-colors",
+              data: { turbo_confirm: "Send this email to #{@draft.contact.email}?", turbo_submits_with: "Sending…" } %>
+            <div class="relative" data-controller="send-later">
+              <button type="button" data-action="send-later#toggle" class="btn-ghost btn-sm">Send Later</button>
+              <div data-send-later-target="picker" class="hidden absolute top-full right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg p-3 z-10">
+                <%= form_with url: send_later_draft_path(@draft), method: :post, class: "flex items-end gap-2" do |f| %>
+                  <div>
+                    <label class="text-xs text-slate-500 block mb-1">Schedule for</label>
+                    <input type="datetime-local" name="scheduled_at" class="form-input text-xs py-1.5" min="<%= Time.current.strftime('%Y-%m-%dT%H:%M') %>" required>
+                  </div>
+                  <button type="submit" class="btn-primary btn-sm text-xs">Schedule</button>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        <% elsif @draft.scheduled? %>
+          <span class="text-sm text-slate-500">Scheduled for <%= @draft.scheduled_at&.strftime("%b %-d at %l:%M %p") %></span>
+        <% end %>
+      </div>
+    </div>
+
+    <%# Email preview %>
+    <div class="card-body">
+      <div class="mb-4 pb-4 border-b border-slate-100">
+        <p class="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1">Subject</p>
+        <p class="text-slate-900 font-medium"><%= @draft.subject %></p>
+      </div>
+      <div class="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed"><%= @draft.body %></div>
+
+      <% if @draft.attachments.any? %>
+        <div class="mt-4 pt-4 border-t border-slate-100">
+          <p class="text-xs font-medium text-slate-400 uppercase tracking-wide mb-2">Attachments</p>
+          <div class="flex flex-wrap gap-2">
+            <% @draft.attachments.each do |attachment| %>
+              <a href="<%= rails_blob_path(attachment, disposition: "attachment") %>" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 rounded-lg text-sm text-slate-700 hover:bg-slate-200 transition-colors">
+                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                <%= attachment.filename %>
+                <span class="text-xs text-slate-400">(<%= number_to_human_size(attachment.byte_size) %>)</span>
+              </a>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

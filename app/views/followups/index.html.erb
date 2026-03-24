@@ -1,0 +1,102 @@
+<%= render "shared/page_header",
+  title: "Followups",
+  breadcrumbs: [["Followups", nil]] %>
+
+<%# Stats bar %>
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+  <div class="stat-card">
+    <div class="flex items-center gap-2">
+      <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+      <span class="stat-label">Total</span>
+    </div>
+    <p class="stat-value mt-1"><%= @total_count %></p>
+  </div>
+  <div class="stat-card">
+    <div class="flex items-center gap-2">
+      <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+      <span class="stat-label">Pending</span>
+    </div>
+    <p class="stat-value mt-1"><%= @pending_count %></p>
+  </div>
+  <div class="stat-card">
+    <div class="flex items-center gap-2">
+      <span class="w-2 h-2 rounded-full bg-rose-400 animate-pulse"></span>
+      <span class="stat-label">Overdue</span>
+    </div>
+    <p class="stat-value mt-1"><%= @overdue_count %></p>
+  </div>
+  <div class="stat-card">
+    <div class="flex items-center gap-2">
+      <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+      <span class="stat-label">Completed</span>
+    </div>
+    <p class="stat-value mt-1"><%= @completed_count %></p>
+  </div>
+</div>
+
+<%# Status filter tabs %>
+<div class="flex items-center gap-1 mb-5 bg-slate-100 rounded-lg p-1 w-fit">
+  <% tabs = [["All", followups_path, params[:status].blank?],
+             ["Pending", followups_path(status: :pending), params[:status] == "pending"],
+             ["Completed", followups_path(status: :completed), params[:status] == "completed"],
+             ["Skipped", followups_path(status: :skipped), params[:status] == "skipped"]] %>
+  <% tabs.each do |label, path, active| %>
+    <%= link_to label, path, class: "px-3 py-1.5 text-sm font-medium rounded-md transition-colors #{active ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'}" %>
+  <% end %>
+</div>
+
+<% if @followups.any? %>
+  <div class="card overflow-hidden overflow-x-auto">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th scope="col">Contact</th>
+          <th scope="col">Company</th>
+          <th scope="col">Seq #</th>
+          <th scope="col">Scheduled</th>
+          <th scope="col">Status</th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @followups.each do |followup| %>
+          <% overdue = followup.pending? && followup.scheduled_at && followup.scheduled_at < 7.days.ago %>
+          <% medium = followup.pending? && followup.scheduled_at && followup.scheduled_at < 3.days.ago && !overdue %>
+          <tr class="<%= overdue ? 'bg-rose-50/50' : (medium ? 'bg-amber-50/30' : '') %>">
+            <td class="text-sm">
+              <div class="flex items-center gap-2">
+                <% if overdue %>
+                  <span class="w-2 h-2 rounded-full bg-rose-400 animate-pulse flex-shrink-0"></span>
+                <% elsif medium %>
+                  <span class="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0"></span>
+                <% end %>
+                <%= link_to followup.contact.name || followup.contact.email, followup.contact, class: "text-indigo-600 hover:text-indigo-700 transition-colors" %>
+              </div>
+            </td>
+            <td class="text-sm text-slate-600"><%= followup.contact.company.name %></td>
+            <td class="text-sm text-slate-600"><%= followup.sequence_number %></td>
+            <td class="text-sm text-slate-600"><%= followup.scheduled_at&.strftime("%b %d, %Y") || "—" %></td>
+            <td><%= render "shared/status_badge", status: followup.status %></td>
+            <td class="text-right">
+              <div class="flex items-center gap-2 justify-end">
+                <% if followup.pending? %>
+                  <%= button_to "Skip", skip_followup_path(followup), method: :post, class: "text-sm text-rose-500 hover:text-rose-700 transition-colors" %>
+                <% end %>
+                <% if followup.draft.present? %>
+                  <%= link_to "View Draft", followup.draft, class: "text-sm text-indigo-600 hover:text-indigo-700 transition-colors" %>
+                <% end %>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <div class="card">
+    <%= render "shared/empty_state",
+      title: "No followups",
+      description: "Followups are created automatically when contacts don't reply.",
+      icon: '<svg class="empty-state-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>' %>
+  </div>
+<% end %>

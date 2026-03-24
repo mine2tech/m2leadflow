@@ -1,0 +1,167 @@
+<% content_for(:actions) do %>
+  <%= link_to "Edit", edit_company_path(@company), class: "btn-secondary" %>
+  <%= link_to new_company_contact_path(@company), class: "btn-primary" do %>
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+    Add Contact
+  <% end %>
+<% end %>
+<%= render "shared/page_header",
+  breadcrumbs: [["Companies", companies_path], [@company.name, nil]],
+  title: @company.name,
+  actions: content_for(:actions) %>
+
+<%# Company header card %>
+<div class="card mb-6">
+  <div class="card-body">
+    <div class="flex items-center gap-4">
+      <div class="w-14 h-14 rounded-xl bg-slate-100 flex items-center justify-center flex-shrink-0">
+        <span class="text-lg font-bold text-slate-600"><%= initials_for(@company.name) %></span>
+      </div>
+      <div class="flex-1">
+        <div class="flex items-center gap-3">
+          <h2 class="text-lg font-semibold text-slate-900"><%= @company.name %></h2>
+          <%= render "shared/status_badge", status: @company.status %>
+        </div>
+        <a href="https://<%= @company.domain %>" target="_blank" rel="noopener" class="text-sm text-indigo-600 hover:text-indigo-700 transition-colors flex items-center gap-1 mt-0.5">
+          <%= @company.domain %>
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        </a>
+        <% if @company.notes.present? %>
+          <p class="text-sm text-slate-500 mt-2"><%= @company.notes %></p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%# Enrichment data %>
+<% enrichment_fields = {
+  "Industry" => @company.industry,
+  "Employees" => @company.employee_count,
+  "Revenue" => @company.revenue_range,
+  "Funding" => @company.funding_info,
+  "Headquarters" => @company.headquarters,
+  "Tech Stack" => @company.tech_stack,
+  "Security Posture" => @company.security_posture,
+  "Recent Breaches" => @company.recent_breaches,
+  "Description" => @company.website_description
+} %>
+<% visible_fields = enrichment_fields.select { |_, v| v.present? } %>
+<% if visible_fields.any? %>
+  <div class="card mb-6">
+    <div class="card-header">
+      <h3 class="text-sm font-semibold text-slate-900">Company Intelligence</h3>
+    </div>
+    <div class="card-body">
+      <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+        <% visible_fields.each do |label, value| %>
+          <div>
+            <dt class="text-xs font-medium text-slate-500 uppercase tracking-wide"><%= label %></dt>
+            <dd class="text-sm text-slate-900 mt-0.5"><%= simple_format(value.to_s, class: "text-sm text-slate-900") %></dd>
+          </div>
+        <% end %>
+      </dl>
+      <% if @company.enrichment_data.present? && @company.enrichment_data.any? %>
+        <details class="mt-4 pt-4 border-t border-slate-100">
+          <summary class="text-xs font-medium text-slate-500 cursor-pointer hover:text-slate-700">Additional Data</summary>
+          <pre class="mt-2 text-xs text-slate-600 bg-slate-50 rounded-lg p-3 overflow-x-auto"><%= JSON.pretty_generate(@company.enrichment_data) %></pre>
+        </details>
+      <% end %>
+    </div>
+  </div>
+<% end %>
+
+<%# Pipeline progress bar %>
+<% all_contacts = @company.contacts %>
+<% stage_counts = all_contacts.group_by(&:pipeline_stage).transform_values(&:count) %>
+<% stages = [:pending, :drafted, :sent, :replied, :meeting] %>
+<% total = all_contacts.count.to_f %>
+
+<% if total > 0 %>
+  <div class="card mb-6">
+    <div class="card-body py-4">
+      <div class="flex rounded-lg overflow-hidden h-3 mb-3">
+        <% stages.each do |stage| %>
+          <% count = stage_counts[stage] || 0 %>
+          <% pct = (count / total * 100).round(1) %>
+          <% next if pct == 0 %>
+          <div class="<%= pipeline_stage_color(stage) %>" style="width: <%= pct %>%" title="<%= stage.to_s.capitalize %>: <%= count %>"></div>
+        <% end %>
+      </div>
+      <div class="flex items-center gap-4 flex-wrap">
+        <% stages.each do |stage| %>
+          <div class="flex items-center gap-1.5 text-xs text-slate-600">
+            <span class="w-2 h-2 rounded-sm <%= pipeline_stage_color(stage) %>"></span>
+            <%= stage.to_s.capitalize %> (<%= stage_counts[stage] || 0 %>)
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<%# Stage filter pills %>
+<div class="flex items-center gap-1 mb-5 bg-slate-100 rounded-lg p-1 w-fit">
+  <%= link_to company_path(@company), class: "px-3 py-1.5 text-sm font-medium rounded-md transition-colors #{params[:stage].blank? ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'}" do %>
+    All (<%= all_contacts.count %>)
+  <% end %>
+  <% stages.each do |stage| %>
+    <% count = stage_counts[stage] || 0 %>
+    <%= link_to company_path(@company, stage: stage), class: "px-3 py-1.5 text-sm font-medium rounded-md transition-colors #{params[:stage] == stage.to_s ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'}" do %>
+      <%= stage.to_s.capitalize %> (<%= count %>)
+    <% end %>
+  <% end %>
+</div>
+
+<%# Contacts table %>
+<% if @contacts.any? %>
+  <div class="card overflow-hidden overflow-x-auto">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th scope="col">Contact</th>
+          <th scope="col">Role</th>
+          <th scope="col">Stage</th>
+          <th scope="col">Last Activity</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @contacts.each do |contact| %>
+          <% stage = contact.pipeline_stage %>
+          <tr class="group cursor-pointer" onclick="window.Turbo.visit('<%= contact_path(contact) %>')">
+            <td>
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
+                  <span class="text-xs font-bold text-slate-600"><%= initials_for(contact.name) %></span>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-slate-900 group-hover:text-indigo-600 transition-colors"><%= contact.name || contact.email %></p>
+                  <p class="text-xs text-slate-500"><%= contact.email.presence || contact.phone %></p>
+                </div>
+              </div>
+            </td>
+            <td class="text-sm text-slate-600"><%= contact.role || "—" %></td>
+            <td><%= render "shared/status_badge", status: stage %></td>
+            <td class="text-sm text-slate-500">
+              <% last_at = contact.last_outbound_at || contact.updated_at %>
+              <%= time_ago_in_words(last_at) %> ago
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <div class="card">
+    <%= render "shared/empty_state",
+      title: "No contacts yet",
+      description: "Add contacts to start your outreach for #{@company.name}.",
+      cta_text: "Add Contact",
+      cta_path: new_company_contact_path(@company) %>
+  </div>
+<% end %>
+
+<%# Activity & Comments %>
+<div class="mt-6">
+  <%= render "shared/activity_panel", activities: @activities, commentable: @company %>
+</div>

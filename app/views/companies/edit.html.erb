@@ -1,0 +1,12 @@
+<%= render "shared/page_header",
+  breadcrumbs: [["Companies", companies_path], [@company.name, company_path(@company)], ["Edit", nil]],
+  title: "Edit Company" %>
+
+<div class="card max-w-3xl mx-auto">
+  <div class="card-header">
+    <h2 class="text-sm font-semibold text-slate-900">Edit <%= @company.name %></h2>
+  </div>
+  <div class="card-body">
+    <%= render "form", company: @company %>
+  </div>
+</div>

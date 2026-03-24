@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "M2Leadflow" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="application-name" content="M2Leadflow">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= yield :head %>
+    <link rel="icon" href="/icon.png" type="image/png">
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="bg-slate-50 min-h-screen antialiased" data-controller="keyboard sidebar">
+    <%# Mobile header bar %>
+    <header class="mobile-header fixed top-0 left-0 right-0 z-30 bg-slate-900 px-4 py-3 items-center justify-between">
+      <button data-action="sidebar#toggle" class="text-slate-300 hover:text-white transition-colors p-1" aria-label="Toggle menu">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <span class="text-sm font-bold text-white tracking-tight">LeadFlow</span>
+      <div class="w-6"></div>
+    </header>
+
+    <%# Dark overlay when mobile sidebar is open %>
+    <div data-sidebar-target="overlay" data-action="click->sidebar#close" class="sidebar-overlay fixed inset-0 bg-black/50 z-40"></div>
+
+    <%# Sidebar %>
+    <div data-sidebar-target="sidebar" class="sidebar-wrapper fixed inset-y-0 left-0 z-50 w-60">
+      <%= render 'shared/sidebar' %>
+    </div>
+
+    <%# Main content %>
+    <div class="main-content min-h-screen flex flex-col">
+      <div id="flash-messages" class="fixed top-16 right-4 z-30 flex flex-col gap-2" style="top: 4rem;">
+        <%= render 'shared/flash' %>
+      </div>
+      <main class="flex-1 page-container">
+        <%= yield %>
+      </main>
+    </div>
+  </body>
+</html>

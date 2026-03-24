@@ -1,0 +1,64 @@
+<div class="rounded-xl border p-4 cursor-pointer <%= message.outbound? ? 'bg-slate-50 border-slate-200' : 'bg-white border-slate-200 ring-1 ring-emerald-100' %>"
+     data-controller="collapse" data-action="click->collapse#toggle">
+  <div class="flex items-center justify-between mb-2">
+    <div class="flex items-center gap-2">
+      <p class="text-xs font-semibold <%= message.outbound? ? 'text-slate-500' : 'text-emerald-600' %>">
+        <% if message.outbound? %>
+          You
+        <% else %>
+          <%= contact.name || "Them" %>
+        <% end %>
+      </p>
+      <% if message.inbound? && message.classification.present? %>
+        <% cls_colors = {
+          "interested" => "bg-emerald-100 text-emerald-700",
+          "not_interested" => "bg-rose-100 text-rose-700",
+          "out_of_office" => "bg-amber-100 text-amber-700",
+          "wrong_person" => "bg-slate-100 text-slate-600",
+          "auto_reply" => "bg-slate-100 text-slate-500"
+        } %>
+        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold <%= cls_colors[message.classification] %>">
+          <%= message.classification.humanize %>
+        </span>
+      <% end %>
+    </div>
+    <div class="flex items-center gap-2">
+      <% if message.attachments.any? %>
+        <span class="text-xs text-slate-400 flex items-center gap-1">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+          <%= message.attachments.count %>
+        </span>
+      <% end %>
+      <span class="text-xs text-slate-400"><%= message.created_at.strftime("%b %-d, %l:%M %p") %></span>
+      <svg data-collapse-target="icon" class="w-4 h-4 text-slate-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+    </div>
+  </div>
+  <% if message.subject.present? %>
+    <p class="text-sm font-medium text-slate-800 mb-1"><%= message.subject %></p>
+  <% end %>
+  <p class="text-sm text-slate-700 line-clamp-3"><%= message.body&.truncate(200) %></p>
+
+  <%# Expandable full content %>
+  <div data-collapse-target="content" class="overflow-hidden transition-all duration-200" style="max-height: 0px; opacity: 0;">
+    <div class="mt-3 pt-3 border-t border-slate-100">
+      <p class="text-sm text-slate-700 whitespace-pre-wrap"><%= message.body %></p>
+
+      <% if message.attachments.any? %>
+        <div class="mt-3 pt-3 border-t border-slate-100">
+          <p class="text-xs font-medium text-slate-400 uppercase tracking-wide mb-2">Attachments</p>
+          <div class="flex flex-wrap gap-2">
+            <% message.attachments.each do |attachment| %>
+              <a href="<%= rails_blob_path(attachment, disposition: "attachment") %>"
+                 class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 rounded-lg text-sm text-slate-700 hover:bg-slate-200 transition-colors"
+>
+                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                <%= attachment.filename %>
+                <span class="text-xs text-slate-400">(<%= number_to_human_size(attachment.byte_size) %>)</span>
+              </a>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

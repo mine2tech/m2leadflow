@@ -1,0 +1,51 @@
+<div id="<%= dom_id(draft, :row) %>" class="card-interactive group p-5 flex items-start gap-4">
+  <% if local_assigns[:show_checkbox] && draft.draft? %>
+    <input type="checkbox" value="<%= draft.id %>"
+           data-bulk-select-target="checkbox"
+           data-action="bulk-select#toggle"
+           class="mt-2.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 flex-shrink-0">
+  <% end %>
+  <div class="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
+    <span class="text-xs font-bold text-slate-600"><%= initials_for(draft.contact.name) %></span>
+  </div>
+  <div class="flex-1 min-w-0">
+    <div class="flex items-center justify-between mb-1">
+      <div class="flex items-center gap-2">
+        <%= link_to draft.contact, class: "text-sm font-medium text-slate-900 hover:text-indigo-600 transition-colors" do %>
+          <%= draft.contact.name || draft.contact.email %>
+        <% end %>
+        <span class="text-xs text-slate-400">&middot;</span>
+        <span class="text-xs text-slate-500"><%= draft.contact.company.name %></span>
+      </div>
+      <div class="flex items-center gap-2">
+        <% if draft.attachments.any? %>
+          <span class="text-xs text-slate-400 flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+            <%= draft.attachments.count %>
+          </span>
+        <% end %>
+        <%= render "shared/status_badge", status: draft.status %>
+      </div>
+    </div>
+    <%= link_to draft, class: "block group/link" do %>
+      <p class="text-sm font-medium text-slate-800 group-hover/link:text-indigo-600 transition-colors"><%= draft.subject || "(no subject)" %></p>
+      <p class="text-sm text-slate-500 mt-1 line-clamp-2"><%= draft.body %></p>
+    <% end %>
+  </div>
+  <div class="flex items-center gap-2 flex-shrink-0 pt-1">
+    <% if draft.draft? %>
+      <%= button_to "Review", approve_draft_path(draft), method: :post, class: "btn-primary btn-sm",
+            data: { turbo_submits_with: "Reviewing…" } %>
+      <%= link_to "Edit", edit_draft_path(draft), class: "btn-ghost btn-sm" %>
+    <% elsif draft.reviewed? %>
+      <%= button_to "Back to Draft", unapprove_draft_path(draft), method: :post, class: "btn-ghost btn-sm" %>
+      <% if current_user.can_send_email? && draft.contact.email.present? %>
+        <%= button_to "Send Now", send_email_draft_path(draft), method: :post,
+          class: "btn-sm inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-medium transition-colors",
+          data: { turbo_confirm: "Send this email to #{draft.contact.email}?", turbo_submits_with: "Sending…" } %>
+      <% end %>
+      <%= link_to "Edit", edit_draft_path(draft), class: "btn-ghost btn-sm" %>
+    <% end %>
+    <%= link_to "View", draft, class: "btn-ghost btn-sm" %>
+  </div>
+</div>

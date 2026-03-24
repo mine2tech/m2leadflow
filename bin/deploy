@@ -1,0 +1,33 @@
+#!/bin/bash
+set -e
+
+APP_DIR=~/projects/mine2
+SERVER=root@144.24.119.241
+SSH_KEY=~/keys/m2/m2portal.pem
+REMOTE_PATH=/opt/m2leadflow
+
+echo "==> Creating tarball..."
+cd "$APP_DIR"
+tar czf /tmp/m2leadflow.tar.gz \
+  --exclude='.git' --exclude='node_modules' --exclude='log/*' \
+  --exclude='tmp/*' --exclude='storage/*' --exclude='.bundle' \
+  --exclude='.env' --exclude='.env.production' --exclude='config/master.key' \
+  --exclude='.claude/skills/cowork_config.json' --exclude='*.png' \
+  m2leadflow/
+
+echo "==> Uploading to server..."
+scp -i "$SSH_KEY" /tmp/m2leadflow.tar.gz "$SERVER":/tmp/
+
+echo "==> Deploying on server..."
+ssh -i "$SSH_KEY" "$SERVER" bash -s <<'REMOTE'
+cd /opt/m2leadflow
+cp .env.production /tmp/.env.production.bak
+tar xzf /tmp/m2leadflow.tar.gz --strip-components=1 --overwrite
+cp /tmp/.env.production.bak .env.production
+docker compose build --no-cache
+docker compose down && docker compose up -d
+sleep 5
+docker exec m2leadflow-web-1 bundle exec rails db:migrate 2>/dev/null || true
+echo "==> Deploy complete. Containers:"
+docker compose ps --format 'table {{.Name}}\t{{.Status}}'
+REMOTE

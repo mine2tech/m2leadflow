@@ -1,0 +1,59 @@
+<%= turbo_frame_tag dom_id(draft) do %>
+  <div class="rounded-xl border p-4 transition-all duration-200 <%= case draft.status; when 'sent' then 'bg-slate-50 border-slate-200'; when 'scheduled' then 'bg-sky-50/50 border-sky-200'; when 'reviewed' then 'bg-emerald-50/50 border-emerald-200'; else 'bg-amber-50/50 border-amber-200 border-dashed'; end %>">
+    <div class="flex items-start justify-between mb-2">
+      <% if draft.sent? %>
+        <span class="badge badge-success">Sent</span>
+      <% elsif draft.scheduled? %>
+        <span class="badge badge-info">Scheduled for <%= draft.scheduled_at&.strftime("%b %-d, %l:%M %p") %></span>
+      <% elsif draft.reviewed? %>
+        <span class="badge badge-success">Reviewed</span>
+      <% else %>
+        <span class="badge badge-warning">Draft — pending review</span>
+      <% end %>
+      <div class="flex items-center gap-2">
+        <% if draft.attachments.any? %>
+          <span class="text-xs text-slate-500 flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+            <%= draft.attachments.count %>
+          </span>
+        <% end %>
+        <span class="text-xs text-slate-400"><%= draft.created_at.strftime("%b %-d") %></span>
+      </div>
+    </div>
+
+    <% if draft.subject.present? %>
+      <p class="text-sm font-medium text-slate-800 mb-1"><%= draft.subject %></p>
+    <% end %>
+    <p class="text-sm text-slate-600 whitespace-pre-wrap line-clamp-6"><%= draft.body %></p>
+
+    <div class="flex items-center gap-2 mt-3">
+      <% if draft.draft? %>
+        <%= link_to "Edit", edit_draft_path(draft), class: "btn-ghost btn-sm text-xs" %>
+        <%= button_to "Review", approve_draft_path(draft), method: :post, class: "btn-primary btn-sm text-xs",
+              data: { turbo_submits_with: "Reviewing…" } %>
+      <% elsif draft.reviewed? %>
+        <%= button_to "Back to Draft", unapprove_draft_path(draft), method: :post, class: "btn-ghost btn-sm text-xs" %>
+        <%= link_to "Edit", edit_draft_path(draft), class: "btn-ghost btn-sm text-xs" %>
+        <% if defined?(current_user) && current_user&.can_send_email? && draft.contact.email.present? %>
+          <%= button_to "Send Now", send_email_draft_path(draft), method: :post,
+            class: "btn-sm text-xs inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-medium transition-colors",
+            data: { turbo_confirm: "Send this email to #{draft.contact.email}?", turbo_submits_with: "Sending…" } %>
+          <div class="relative" data-controller="send-later">
+            <button type="button" data-action="send-later#toggle" class="btn-ghost btn-sm text-xs">Send Later</button>
+            <div data-send-later-target="picker" class="hidden absolute top-full left-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg p-3 z-10">
+              <%= form_with url: send_later_draft_path(draft), method: :post, class: "flex items-end gap-2" do |f| %>
+                <div>
+                  <label class="text-xs text-slate-500 block mb-1">Schedule for</label>
+                  <input type="datetime-local" name="scheduled_at" class="form-input text-xs py-1.5" min="<%= Time.current.strftime('%Y-%m-%dT%H:%M') %>" required>
+                </div>
+                <button type="submit" class="btn-primary btn-sm text-xs">Schedule</button>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      <% elsif draft.scheduled? %>
+        <span class="text-xs text-slate-500">Sends <%= time_ago_in_words(draft.scheduled_at) %> from now</span>
+      <% end %>
+    </div>
+  </div>
+<% end %>
